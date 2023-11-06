@@ -64,7 +64,7 @@ public class Rec {
 
     fun static void auto() {
 
-        if (me.ancestor() == null) {
+        if (me.ancestor().id() == me.id()) {
             cherr <= "You need to spork Rec functions (i.e. spork~ Rec.auto())" <= IO.nl();
         } else {
             auto(me.ancestor().dir());
@@ -123,7 +123,7 @@ public class Rec {
     }
 
     fun static void auto(UGen @ ugen) {
-        if (me.ancestor() == null) {
+        if (me.ancestor().id() == me.id()) {
             cherr <= "You need to spork Rec functions (i.e. spork~ Rec.auto())" <= IO.nl();
             return;
         }
@@ -144,7 +144,7 @@ public class Rec {
     fun static void auto(UGen @ ugen[]) {
         // this doesn't handle arrays of multi-channel ugens, but that's so 
         // edge-case-y that I can't be bothered.
-        if (me.ancestor() == null) {
+        if (me.ancestor().id() == me.id()) {
             cherr <= "You need to spork Rec functions (i.e. spork~ Rec.auto())" <= IO.nl();
             return;
         }
