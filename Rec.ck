@@ -44,7 +44,7 @@ public class Rec {
         // in another directory.  if this isn't set, the file
         // should appear in the directory you run chuck from
         // with only the date and time.
-        dir + "session" => w.autoPrefix;
+        dir + "/session" => w.autoPrefix;
 
         // this is the output file name
         "special:auto" => w.wavFilename;
@@ -58,7 +58,7 @@ public class Rec {
         null @=> w;
 
         // infinite time loop...
-        // ctrl-c will stop it, or modify to desired duration
+        // ctrl-c will stop it
         while( true ) 1::second => now;
     }
 
@@ -73,7 +73,7 @@ public class Rec {
 
     fun static void autoMono(UGen @ ugen, string dir) {
         ugen => WvOut w => blackhole;
-        dir + "session" => w.autoPrefix;
+        dir + "/session" => w.autoPrefix;
 
         "special:auto" => w.wavFilename;
 
@@ -83,13 +83,13 @@ public class Rec {
         null @=> w;
 
         // infinite time loop...
-        // ctrl-c will stop it, or modify to desired duration
+        // ctrl-c will stop it
         while( true ) 1::second => now;
     }
 
     fun static void autoStereo(UGen @ ugen, string dir) {
         ugen => WvOut2 w => blackhole;
-        dir + "session" => w.autoPrefix;
+        dir + "/session" => w.autoPrefix;
 
         "special:auto" => w.wavFilename;
 
@@ -99,7 +99,7 @@ public class Rec {
         null @=> w;
 
         // infinite time loop...
-        // ctrl-c will stop it, or modify to desired duration
+        // ctrl-c will stop it
         while( true ) 1::second => now;
     }
 
@@ -111,14 +111,14 @@ public class Rec {
         for (int i: Std.range(chans)) {
             ws[i] @=> WvOut w;
             w => blackhole;
-            dir + "session-" + i => w.autoPrefix;
+            dir + "/session-" + i => w.autoPrefix;
             "special:auto" => w.wavFilename;
             <<< "writing UGen chan", i, "to file: ", w.filename()>>>;
             null @=> w;
         }
 
         // infinite time loop...
-        // ctrl-c will stop it, or modify to desired duration
+        // ctrl-c will stop it
         while( true ) 1::second => now;
     }
 
@@ -165,14 +165,14 @@ public class Rec {
         for (int i: Std.range(chans)) {
             ws[i] @=> WvOut w;
             w => blackhole;
-            dir + "session-" + i => w.autoPrefix;
+            dir + "/session-" + i => w.autoPrefix;
             "special:auto" => w.wavFilename;
             <<< "writing UGen chan", i, "to file: ", w.filename()>>>;
             null @=> w;
         }
 
         // infinite time loop...
-        // ctrl-c will stop it, or modify to desired duration
+        // ctrl-c will stop it
         while( true ) 1::second => now;
     }
 
@@ -185,7 +185,7 @@ public class Rec {
         // in another directory.  if this isn't set, the file
         // should appear in the directory you run chuck from
         // with only the date and time.
-        dir + "session" => w.autoPrefix;
+        dir + "/session" => w.autoPrefix;
 
         // this is the output file name
         "special:auto" => w.wavFilename;
@@ -202,8 +202,23 @@ public class Rec {
         null @=> w;
 
         // infinite time loop...
-        // ctrl-c will stop it, or modify to desired duration
+        // ctrl-c will stop it
         while( true ) 1::second => now;
 
+    }
+
+    fun static void stereo(UGen @ ugen, string filepath) {
+        ugen => WvOut2 w => blackhole;
+
+        filepath => w.wavFilename;
+
+        <<< "writing UGen to file:", w.filename()>>>;
+
+        // temporary workaround to automatically close file on remove-shred
+        null @=> w;
+
+        // infinite time loop...
+        // ctrl-c will stop it
+        while( true ) 1::second => now;
     }
 }
