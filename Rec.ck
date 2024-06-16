@@ -87,6 +87,22 @@ public class Rec {
         while( true ) 1::second => now;
     }
 
+    fun static autoMonoFilepath(UGen @ ugen, string filepath) {
+	// provide a filename to append the timestamp to i.e. /path/to/file
+        ugen => WvOut w => blackhole;
+        filepath => w.autoPrefix;
+
+        "special:auto" => w.wavFilename;
+
+        <<<"writing UGen to file:", w.filename()>>>;
+
+        // temporary workaround to automatically close file on remove-shred
+        null @=> w;
+
+        // infinite time loop...
+        // ctrl-c will stop it
+        while( true ) 1::second => now;    }
+
     fun static void autoStereo(UGen @ ugen, string dir) {
         ugen => WvOut2 w => blackhole;
         dir + "/session" => w.autoPrefix;
@@ -209,6 +225,21 @@ public class Rec {
 
     fun static void stereo(UGen @ ugen, string filepath) {
         ugen => WvOut2 w => blackhole;
+
+        filepath => w.wavFilename;
+
+        <<< "writing UGen to file:", w.filename()>>>;
+
+        // temporary workaround to automatically close file on remove-shred
+        null @=> w;
+
+        // infinite time loop...
+        // ctrl-c will stop it
+        while( true ) 1::second => now;
+    }
+
+    fun static void mono(UGen @ ugen, string filepath) {
+        ugen => WvOut w => blackhole;
 
         filepath => w.wavFilename;
 
