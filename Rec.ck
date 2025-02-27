@@ -34,6 +34,10 @@ etc., etc.
 ******************************/
 
 public class Rec {
+    fun static string version() {
+        return "1.1.0";
+    }
+
     fun static void auto(string dir) {
 
         // pull samples from the dac
@@ -53,9 +57,6 @@ public class Rec {
 
         // print it out
         <<<"writing to file: ", w.filename()>>>;
-
-        // temporary workaround to automatically close file on remove-shred
-        null @=> w;
 
         // infinite time loop...
         // ctrl-c will stop it
@@ -79,9 +80,6 @@ public class Rec {
 
         <<<"writing UGen to file:", w.filename()>>>;
 
-        // temporary workaround to automatically close file on remove-shred
-        null @=> w;
-
         // infinite time loop...
         // ctrl-c will stop it
         while( true ) 1::second => now;
@@ -96,9 +94,6 @@ public class Rec {
 
         <<<"writing UGen to file:", w.filename()>>>;
 
-        // temporary workaround to automatically close file on remove-shred
-        null @=> w;
-
         // infinite time loop...
         // ctrl-c will stop it
         while( true ) 1::second => now;    }
@@ -110,9 +105,6 @@ public class Rec {
         "special:auto" => w.wavFilename;
 
         <<< "writing UGen to file:", w.filename()>>>;
-
-        // temporary workaround to automatically close file on remove-shred
-        null @=> w;
 
         // infinite time loop...
         // ctrl-c will stop it
@@ -130,7 +122,6 @@ public class Rec {
             dir + "/session-" + i => w.autoPrefix;
             "special:auto" => w.wavFilename;
             <<< "writing UGen chan", i, "to file: ", w.filename()>>>;
-            null @=> w;
         }
 
         // infinite time loop...
@@ -158,7 +149,7 @@ public class Rec {
     }
 
     fun static void auto(UGen @ ugen[]) {
-        // this doesn't handle arrays of multi-channel ugens, but that's so 
+        // this doesn't handle arrays of multi-channel ugens, but that's so
         // edge-case-y that I can't be bothered.
         if (me.ancestor().id() == me.id()) {
             cherr <= "You need to spork Rec functions (i.e. spork~ Rec.auto())" <= IO.nl();
@@ -184,7 +175,6 @@ public class Rec {
             dir + "/session-" + i => w.autoPrefix;
             "special:auto" => w.wavFilename;
             <<< "writing UGen chan", i, "to file: ", w.filename()>>>;
-            null @=> w;
         }
 
         // infinite time loop...
@@ -214,9 +204,6 @@ public class Rec {
         // any gain you want for the output
         1.0 => g.gain;
 
-        // temporary workaround to automatically close file on remove-shred
-        null @=> w;
-
         // infinite time loop...
         // ctrl-c will stop it
         while( true ) 1::second => now;
@@ -230,9 +217,6 @@ public class Rec {
 
         <<< "writing UGen to file:", w.filename()>>>;
 
-        // temporary workaround to automatically close file on remove-shred
-        null @=> w;
-
         // infinite time loop...
         // ctrl-c will stop it
         while( true ) 1::second => now;
@@ -244,9 +228,6 @@ public class Rec {
         filepath => w.wavFilename;
 
         <<< "writing UGen to file:", w.filename()>>>;
-
-        // temporary workaround to automatically close file on remove-shred
-        null @=> w;
 
         // infinite time loop...
         // ctrl-c will stop it
