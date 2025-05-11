@@ -33,11 +33,15 @@ spork~ Rec.auto(s); // just pass in the ugen and viola! it's recording
 etc., etc.
 ******************************/
 
+@doc "A class that provides helper functionality for recording to audio files."
 public class Rec {
+
+    @doc "Return Rec version as a string"
     fun static string version() {
-        return "1.1.0";
+        return "1.2.0";
     }
 
+    @doc "Automatically record the DAC to a stereo file and store in specified directory. Will prepend the datetime to the file."
     fun static void auto(string dir) {
 
         // pull samples from the dac
@@ -63,16 +67,26 @@ public class Rec {
         while( true ) 1::second => now;
     }
 
-    fun static void auto() {
-
-        if (me.ancestor().id() == me.id()) {
+    @doc "(hidden)"
+    fun static int validateSpork() {
+    	if (me.ancestor().id() == me.id()) {
             cherr <= "You need to spork Rec functions (i.e. spork~ Rec.auto())" <= IO.nl();
+	    return false;
         } else {
+	    return true;
+        }
+    }
+
+    @doc "Automatically record the DAC to a stereo file and store in the current directory. Will prepend the datetime to the file."
+    fun static void auto() {
+        if (validateSpork()) {
             auto(me.ancestor().dir());
         }
     }
 
+    @doc "Automatically record a mono UGen and store in specified directory. Will prepend the datetime to the file."
     fun static void autoMono(UGen @ ugen, string dir) {
+    	if (!validateSpork()) return;
         ugen => WvOut w => blackhole;
         dir + "/session" => w.autoPrefix;
 
@@ -85,8 +99,10 @@ public class Rec {
         while( true ) 1::second => now;
     }
 
+    @doc "Automatically record a mono UGen and store in specified filepath. Will prepend the datetime to the file."
     fun static autoMonoFilepath(UGen @ ugen, string filepath) {
 	// provide a filename to append the timestamp to i.e. /path/to/file
+	if (!validateSpork()) return;
         ugen => WvOut w => blackhole;
         filepath => w.autoPrefix;
 
@@ -98,7 +114,9 @@ public class Rec {
         // ctrl-c will stop it
         while( true ) 1::second => now;    }
 
+    @doc "Automatically record a stereo UGen and store in specified directory. Will prepend the datetime to the file."
     fun static void autoStereo(UGen @ ugen, string dir) {
+    	if (!validateSpork()) return;
         ugen => WvOut2 w => blackhole;
         dir + "/session" => w.autoPrefix;
 
@@ -111,7 +129,9 @@ public class Rec {
         while( true ) 1::second => now;
     }
 
+    @doc "Automatically record a multichannels UGen and store in specified directory. Will prepend the datetime to the files (one file per channel)."
     fun static void autoMulti(UGen @ ugen, string dir) {
+        if (!validateSpork()) return;
         ugen.channels() => int chans;
 
         ugen => WvOut ws[chans];
@@ -129,11 +149,9 @@ public class Rec {
         while( true ) 1::second => now;
     }
 
+    @doc "Automatically record a UGen and store in the current directory. Will prepend the datetime to the file and handle different numbers of channels automatically."
     fun static void auto(UGen @ ugen) {
-        if (me.ancestor().id() == me.id()) {
-            cherr <= "You need to spork Rec functions (i.e. spork~ Rec.auto())" <= IO.nl();
-            return;
-        }
+        if (!validateSpork()) return;
 
         me.ancestor().dir() => string dir;
 
@@ -148,13 +166,11 @@ public class Rec {
         }
     }
 
+    @doc "Automatically record an array of UGens and store in the current directory. Will prepend the datetime to the files (one file per UGen)."
     fun static void auto(UGen @ ugen[]) {
         // this doesn't handle arrays of multi-channel ugens, but that's so
         // edge-case-y that I can't be bothered.
-        if (me.ancestor().id() == me.id()) {
-            cherr <= "You need to spork Rec functions (i.e. spork~ Rec.auto())" <= IO.nl();
-            return;
-        }
+	if (!validateSpork()) return;
 
         me.ancestor().dir() => string dir;
 
@@ -182,8 +198,10 @@ public class Rec {
         while( true ) 1::second => now;
     }
 
+    @doc "(hidden)"
     fun static void autoMono(string dir) {
         // pull samples from the dac
+	if (!validateSpork()) return;
         dac => Gain g => WvOut2 w => blackhole;
 
         // set the prefix, which will prepended to the filename
@@ -210,7 +228,9 @@ public class Rec {
 
     }
 
+    @doc "Record stereo UGen to a specified file."
     fun static void stereo(UGen @ ugen, string filepath) {
+        if (!validateSpork()) return;
         ugen => WvOut2 w => blackhole;
 
         filepath => w.wavFilename;
@@ -222,7 +242,9 @@ public class Rec {
         while( true ) 1::second => now;
     }
 
+    @doc "Record mono UGen to a specified file."
     fun static void mono(UGen @ ugen, string filepath) {
+        if (!validateSpork()) return;
         ugen => WvOut w => blackhole;
 
         filepath => w.wavFilename;
