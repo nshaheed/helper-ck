@@ -36,13 +36,14 @@ PackageVersion ver("Rec", version);
 
 // all the files
 ver.addFile("Rec.ck");
-ver.addExampleFile("Rec_example.ck");
+ver.addExampleFile("_examples/basic.ck");
+ver.addExampleFile("_examples/ugen.ck");
 
 "chugins/Rec/" + ver.version() + "/Rec.zip" => string path; // path?
 
 // wrap up all our files into a zip file, and tell Chumpinate what URL
 // this zip file will be located at.
-ver.generateVersion("./", "Rec", "https://ccrma.stanford.edu/~alexhan/" + path);
+ver.generateVersion("./", "Rec", "https://ccrma.stanford.edu/~nshaheed/" + path);
 
 chout <= "Use the following commands to upload the package to CCRMA's servers:" <= IO.newline();
 chout <= "ssh nshaheed@ccrma-gate.stanford.edu \"mkdir -p ~/Library/Web/chugins/Rec/"
