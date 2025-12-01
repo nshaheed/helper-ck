@@ -15,8 +15,8 @@ Package pkg("Rec");
 "https://github.com/nshaheed/helper-ck" => pkg.homepage;
 "https://github.com/nshaheed/helper-ck" => pkg.repository;
 
-"tbd" => pkg.license;
-"Helper functions for recording to audio files. Supports recording from dac, ugens, and arrays of ugens." => pkg.description;
+"MIT" => pkg.license;
+"Helper functions for recording to audio files. Supports recording from dac, UGens, and arrays of UGens." => pkg.description;
 
 ["utility", "recording"] => pkg.keywords;
 

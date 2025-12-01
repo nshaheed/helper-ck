@@ -29,7 +29,7 @@ public class SideWarp extends Chugraph {
 
     fun @construct(float atk_speed, float rel_speed) {
       atk_speed => attack_speed;
-      rel speed => release_speed;
+      rel_speed => release_speed;
 
       mix(0.5);
       10::second => sampler.duration;
