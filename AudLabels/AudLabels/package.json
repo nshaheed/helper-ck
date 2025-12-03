@@ -1,0 +1,15 @@
+{
+    "authors": [
+        "Nick Shaheed"
+    ],
+    "description": "Provides AudLabels, a utility class to read Audacity label files",
+    "homepage": "https://github.com/nshaheed/helper-ck",
+    "keywords": [
+        "Utility",
+        "Audacity",
+        "Labels"
+    ],
+    "license": "MIT",
+    "name": "AudLabels",
+    "repository": "https://github.com/nshaheed/helper-ck"
+}

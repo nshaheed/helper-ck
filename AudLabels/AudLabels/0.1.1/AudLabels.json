@@ -1,0 +1,19 @@
+{
+    "arch": "all",
+    "files": [
+        {
+            "checksum": "c345592dc87550ede2855400b9d8f984cd271d112965ad4ac52cc20af461a13b",
+            "file_type": "zip",
+            "local_dir": "./",
+            "url": "https://ccrma.stanford.edu/~nshaheed/chugins/AudLabels/0.1.1/AudLabels.zip"
+        }
+    ],
+    "language_version_min": {
+        "major": 5,
+        "mega": 1,
+        "minor": 5,
+        "patch": 6
+    },
+    "os": "any",
+    "version": "0.1.1"
+}
