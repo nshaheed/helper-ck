@@ -94,13 +94,16 @@ public class AudLabels {
     fun int size() {
       	return labels.size();
     }
+
+    fun static string version() {
+	return "0.1.0";
+    }
 }
 
 
 // test
-AudLabels test("audacity_labels.txt");
-AudLabels test2("point_blank.txt");
+AudLabels test(me.dir() + "/_examples/audacity_labels.txt");
 
 chout <= "\nexpecting test to fail here:\n";
-AudLabels test_failure("audacity_labels_bad.txt");
-AudLabels test_failure2("audacity_labels_bad2.txt");
+AudLabels test_failure(me.dir() + "/_examples/audacity_labels_bad.txt");
+AudLabels test_failure2(me.dir() + "/_examples/audacity_labels_bad2.txt");

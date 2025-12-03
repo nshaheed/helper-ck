@@ -13,7 +13,6 @@ public class SideWarp extends Chugraph {
     float threshold;
 
     fun @construct() {
-        /* 0.5 => dry.gain => wet.gain; */
 	mix(0.5);
         10::second => sampler.duration;
         sampler.bi(0, false);
@@ -28,39 +27,46 @@ public class SideWarp extends Chugraph {
     }
 
     fun @construct(float atk_speed, float rel_speed) {
-      atk_speed => attack_speed;
-      rel_speed => release_speed;
+	atk_speed => attack_speed;
+	rel_speed => release_speed;
 
-      mix(0.5);
-      10::second => sampler.duration;
-      sampler.bi(0, false);
-      sampler.loop(0, true);
-      sampler.play(0, true);
-      true => sampler.record;
+	mix(0.5);
+	10::second => sampler.duration;
+	sampler.bi(0, false);
+	sampler.loop(0, true);
+	sampler.play(0, true);
+	true => sampler.record;
 
-      0.2 => threshold;
-      spork~ update_speed();
+	0.2 => threshold;
+	spork~ update_speed();
+    }
+
+    // TODO make a constructor that loads an audio file and doesn't turn on
+    // recording.
+
+    @doc "get package version number"
+    fun static string version() {
+	return "1.0.0";
     }
 
     @doc "set the mix level (1.0 - wet, 0.0 - dry)"
     fun float mix(float balance) {
-      if (balance > 1.0) {
-	cherr <= "[SideWarp]: mix should between [0,1]" <= IO.newline();
-	1.0 => balance;
-      }
-      if (balance < 0.0) {
-	cherr <= "[SideWarp]: mix should between [0,1]" <= IO.newline();
-	0.0 => balance;
-      }
-      Math.map(balance, 0, 1, 0, Math.PI / 2) => float theta;
+	if (balance > 1.0) {
+	    cherr <= "[SideWarp]: mix should between [0,1]" <= IO.newline();
+	    1.0 => balance;
+	}
+	if (balance < 0.0) {
+	    cherr <= "[SideWarp]: mix should between [0,1]" <= IO.newline();
+	    0.0 => balance;
+	}
+	Math.map(balance, 0, 1, 0, Math.PI / 2) => float theta;
 
-      // -4.5 dB Pan Law (https://www.cs.cmu.edu/~music/cmp/archives/icm-online/readings/panlaws/)
-      Math.sqrt(((Math.PI / 2) - theta) * (2.0 / Math.PI) * Math.cos(theta)) => dry.gain;
-      Math.sqrt(theta * (2.0 / Math.PI) * Math.sin(theta)) => wet.gain;
+	// -4.5 dB Pan Law (https://www.cs.cmu.edu/~music/cmp/archives/icm-online/readings/panlaws/)
+	Math.sqrt(((Math.PI / 2) - theta) * (2.0 / Math.PI) * Math.cos(theta)) => dry.gain;
+	Math.sqrt(theta * (2.0 / Math.PI) * Math.sin(theta)) => wet.gain;
 
-      <<< dry.gain(), wet.gain() >>>;
-
-      return balance;
+	// <<< dry.gain(), wet.gain() >>>;
+	return balance;
     }
 
     @doc "(hidden)"
@@ -77,28 +83,26 @@ public class SideWarp extends Chugraph {
 		// when we get close to 1.0 playback rate, reset to 1.0, and
 		// ramp down during the switchover to prevent a pop
 		if (sampler.rate() > 0.99) {
-		  10::samp => sampler.rampDown;
-		  10::samp => now;
-		  10::samp => sampler.rampUp;
+		    10::samp => sampler.rampDown;
+		    10::samp => now;
+		    10::samp => sampler.rampUp;
 
-		  1.0 => sampler.rate;
-		  (sampler.recPos() - samp) % sampler.duration() => sampler.playPos;
-
+		    1.0 => sampler.rate;
+		    (sampler.recPos() - samp) % sampler.duration() => sampler.playPos;
 		}
-            } else {
-                1.0 => sampler.rate;
-            }
+	    } else {
+		1.0 => sampler.rate;
+	    }
 
 	    10::ms => now;
-        }
+	}
     }
-
 }
 
 /* <<<"beginning" >>>; */
 // our patch
 // adc => Average avg(500::ms);
-SndBuf pyramid(me.dir() + "pyramid_song.wav") => SideWarp s => dac;
+SndBuf pyramid(me.dir() + "_examples/pyramid.wav") => SideWarp s => dac;
 
 
 0.0 => s.dry.gain;

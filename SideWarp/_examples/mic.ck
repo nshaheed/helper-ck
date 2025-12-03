@@ -1,4 +1,4 @@
-@import "SideWarp"
+@import "../SideWarp"
 
 adc => SideWarp s => Pan2 left => dac;
 adc => SideWarp r => Pan2 right => dac;

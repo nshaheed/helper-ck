@@ -1,6 +1,8 @@
-@import "SideWarp"
+@import "../SideWarp"
 
-SndBuf pyramid(me.dir() + "pyramid_song.wav") => SideWarp s => Pan2 left => dac;
+// Here we have SideWarp being sidechained with itself!
+
+SndBuf pyramid(me.dir() + "pyramid.wav") => SideWarp s => Pan2 left => dac;
 pyramid => SideWarp r => Pan2 right => dac;
 
 -0.5 => left.pan;
@@ -13,12 +15,9 @@ pyramid => SideWarp r => Pan2 right => dac;
 0.9 => r.attack_speed;
 0.3 => r.release_speed;
 
-
-
+// We only want the bass to trigger the sidechain
 pyramid => LPF lpf => s.sidechain;
 lpf => r.sidechain;
-
-(110::second / samp) $ int => pyramid.pos;
 
 100 => lpf.freq;
 
