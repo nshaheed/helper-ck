@@ -1,0 +1,19 @@
+{
+    "arch": "all",
+    "files": [
+        {
+            "checksum": "7e4b9151d9b53779d85757648fffaeea6e05d385d560e997819bcc1aa8c461ec",
+            "file_type": "zip",
+            "local_dir": "./",
+            "url": "https://ccrma.stanford.edu/~nshaheed/chugins/Rec/1.2.1/Rec.zip"
+        }
+    ],
+    "language_version_min": {
+        "major": 5,
+        "mega": 1,
+        "minor": 4,
+        "patch": 2
+    },
+    "os": "any",
+    "version": "1.2.1"
+}
