@@ -66,6 +66,9 @@ public class AudLabels {
 		    cherr <= "                   expecting 3 or 5 tab-separated columns, exiting..." <= IO.nl();
 		    return;		    
 		}
+	    } else {
+		// The normal case where the third value is the label
+		tok.next() => label;
 	    }
 
 	    // validate sensible start/stop times
@@ -103,7 +106,10 @@ public class AudLabels {
 
 // test
 AudLabels test(me.dir() + "/_examples/audacity_labels.txt");
+if (test.labels[0] != "testtest") <<< "test failed!" >>>;
+if (test.labels[1] != "over here") <<< "test failed!" >>>;
+if (test.labels[2] != "butts") <<< "test failed!" >>>;
 
-chout <= "\nexpecting test to fail here:\n";
+chout <= "expecting tests to fail here:\n";
 AudLabels test_failure(me.dir() + "/_examples/audacity_labels_bad.txt");
 AudLabels test_failure2(me.dir() + "/_examples/audacity_labels_bad2.txt");
