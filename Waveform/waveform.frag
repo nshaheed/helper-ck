@@ -36,7 +36,7 @@ fn backgroundColor() -> vec4f {
 fn scrolledX(uv_x: f32, dim_x: u32) -> i32 {
   if (scrolled == 0) { return i32(uv_x * f32(dim_x)); }
 
-
+  // return i32(uv_x * f32(dim_x));
   let scroll = playhead / f32(dim_x);
   let x = fract(uv_x + scroll);
   return i32(x * f32(dim_x));
@@ -47,14 +47,6 @@ fn alive(coords: vec2i, dim: vec2u, uv: vec2f) -> vec4f {
   // how to handle two position modes:
   // - fixed buffer - always treat [0] as the first position in the buffer
   // - scrolling buffer - the playhead is always at the end (relative)
-
-  // let new_x : i32 = (playhead + i32(coords.x)) % i32(dim.x);
-
-  // // these should all be > 50% height
-  // let pos_max : i32 = i32((0.5 + max_samples[new_x] * 0.5) * f32(dim.y));
-  // // these  should all be < 50% height
-  // let pos_min : i32 = i32((0.5 + min_samples[new_x] * 0.5) * f32(dim.y));
-  // let pos_rms : i32 = i32((0.5 + rms_samples[new_x] * 0.5) * f32(dim.y));
 
   let x = scrolledX(uv.x, dim.x);
 

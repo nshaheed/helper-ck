@@ -98,7 +98,7 @@ public class Waveform extends GGen {
     float rmsbuf[];
     int count;
     time last_update;
-    false => int scroll; // enable scrolling or not
+    true => int scroll; // enable scrolling or not
 
     GG.scenePass().msaa(true);
     GG.outputPass().sampler(TextureSampler.linear());
@@ -254,11 +254,11 @@ public class Waveform extends GGen {
 	material.uniformInt(6, scroll);
 
 
+	// when scrolling is enabled, the playhead will always be on the right side
+	if (scroll) @(0.5, 0) => playhead.pos;
+	else @(playheadPos() - 0.5, 0) => playhead.pos;
 
-	@(playheadPos() - 0.5, 0) => playhead.pos;
-
-	// material.uniformFloat(3, count + delta);
-	material.uniformFloat(3, 0);
+	material.uniformFloat(3, playheadPos() * WINDOW_SIZE);
     }
 }
 
@@ -278,7 +278,7 @@ GG.camera().posZ(1.0);
 
 // adc => Waveform w(WINDOW_SIZE) => blackhole;
 SndBuf snd(me.dir() + "pyramid.wav") => Waveform w(Waveform.WINDOW_SIZE) => blackhole;
-snd => dac;
+snd => Gain sndGain(1.) => dac;
 
 1 => snd.loop;
 
@@ -299,7 +299,7 @@ snd => SideWarp warpRight => Pan2 right => dac;
 snd => LPF lpf(100) => warpRight.sidechain;
 lpf => warpLeft.sidechain;
 
-
+0 => sndGain.gain => warpLeft.gain;
 
 // w.pos(@(1.2,0,0.));
 
@@ -333,12 +333,14 @@ fun setPos(int idx, SideWarp side) {
 
     if (diff < 0::samp) {
 	-1. * diff + side.sampler.playPos() => diff; // for now
-
     }
 
     diff / bufsize => float pos;
 
     w.playheadPos() => float mainPlayheadPos;
+
+    // todo there should be some mechanism for handling this in the class?
+    if (w.scroll) 1.0 => mainPlayheadPos;
 
     mainPlayheadPos - pos => float relativePos;
 
