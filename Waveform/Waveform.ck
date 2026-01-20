@@ -9,7 +9,7 @@
 The fragment shader invocation is not 1:1 with pixels on the quad.
 This means at different resolutions (zoom levels / size of quad) different
 cells will be updated. If the quad is close enough / resolution is high enough,
-every pixel will cover a single cell and simulation will run "accurately".
+nevery pixel will cover a single cell and simulation will run "accurately".
 However if the quad is very far away, and each screen pixel covers multiple
 cells, not all cells will be updated. But kinda looks cool?
 
@@ -17,38 +17,12 @@ IDEA: wrap repeat, sample OFF the grid with scaling factor n*m for INFINITE conw
 - requires doing as screen shader or pass clip space full-screen quad through custom geo */
 //-----------------------------------------------------------------------------
 
-GWindow.windowed(1250, 768);
+@import "SideWarp"
 
-GG.camera().orthographic();
-GG.camera().viewSize(10.0 / 16);
-GG.camera().posZ(1.0);
-
-// audio stuff -----------------------------------------
-// GWindow.fullscreen();
-1024  => int WINDOW_SIZE;
-// accumulate samples from mic
-adc => Flip accum => blackhole;
-WINDOW_SIZE => accum.size;
-
-float samples[WINDOW_SIZE];
-
-fun void readMicInput()
-{
-    while( true )
-    {
-        // upchuck to process accum
-        accum.upchuck();
-        // get the last window size samples (waveform)
-        accum.output( samples );
-        // jump by samples
-        WINDOW_SIZE::samp => now;
-    }
-}
-spork ~ readMicInput();
 
 // get max of mic input for window size
 class Max extends Chugen {
-    WINDOW_SIZE => int window;
+    Waveform.WINDOW_SIZE => int window;
 
     float outputMax;
     float currentMax;
@@ -68,7 +42,7 @@ class Max extends Chugen {
 
 // get max of mic input for window size
 class Min extends Chugen {
-    WINDOW_SIZE => int window;
+    Waveform.WINDOW_SIZE => int window;
 
     float outputMin;
     float currentMin;
@@ -88,7 +62,7 @@ class Min extends Chugen {
 
 // get max of mic input for window size
 class Average extends Chugen {
-    WINDOW_SIZE => int window;
+    Waveform.WINDOW_SIZE => int window;
 
     float outputAvg;
     float currentSum;
@@ -106,7 +80,8 @@ class Average extends Chugen {
     }
 }
 
-class Waveform extends GGen {
+public class Waveform extends GGen {
+    1024  => static int WINDOW_SIZE;
     // a waveform buffer that takes in an audio input and will generate a waveform texture
     Gain inlet => Max max => blackhole;
     inlet => Min min => blackhole;
@@ -122,6 +97,11 @@ class Waveform extends GGen {
     float minbuf[];
     float rmsbuf[];
     int count;
+    time last_update;
+    false => int scroll; // enable scrolling or not
+
+    GG.scenePass().msaa(true);
+    GG.outputPass().sampler(TextureSampler.linear());
 
     me.dir() + "waveform.frag" => string filename;
     FileIO fio;
@@ -131,8 +111,6 @@ class Waveform extends GGen {
     if( !fio.good() )
     {
 	cherr <= "can't open file: " <= filename <= " for reading..." <= IO.nl();
-	// return;
-	// me.exit();
     }
 
     string game_of_life_shader;
@@ -141,10 +119,14 @@ class Waveform extends GGen {
 	fio.readLine() +=> game_of_life_shader;
 	"\n" +=> game_of_life_shader;
     }
-    chout <= game_of_life_shader <= IO.nl();
 
     Material material;
+    // PlaneGeometry plane_geo(1., 0.25, 1, 1);
+    // PlaneGeometry plane_geo(1, 1, 1, 1);
     PlaneGeometry plane_geo;
+
+    // <<< plane_geo.width(), plane_geo.height() >>>;
+    // <<< plane_geo.widthSegments(), plane_geo.heightSegments() >>>;
 
     ShaderDesc shader_desc;
     game_of_life_shader => shader_desc.vertexCode;
@@ -154,6 +136,18 @@ class Waveform extends GGen {
     custom_shader => material.shader; // connect shader to material
 
     GMesh mesh(plane_geo, material) --> this;
+
+    // connect lines to mesh
+    GLines playhead --> mesh;
+    // array of vec2
+    [ @(0,-0.5), @(0,0.5) ] @=> vec2 line_positions[];
+    line_positions => playhead.positions;
+    playhead.pos(@(-0.5, 0));
+    0.001 => playhead.width;
+    // 0.1 => lines.width;
+
+    GLines extraPlayheads[0];
+
 
     TextureDesc conway_tex_desc;
     WINDOW_SIZE => conway_tex_desc.width;
@@ -170,14 +164,17 @@ class Waveform extends GGen {
     // material.storageBuffer(1, samples);
     material.storageBuffer(1, maxbuf);
     material.storageBuffer(2, minbuf);
-    material.uniformInt(3, count);
-    material.uniformInt(4, 2); // playhead width
+    material.uniformFloat(3, count $ float);
+    material.uniformFloat(4, 2.0); // playhead width
+    material.storageBuffer(5, rmsbuf);
+    // scrolling enabled?
+    material.uniformInt(6, scroll);
 
     fun @construct(int bufsize) {
 	material.storageBuffer(1, maxbuf);
 	material.storageBuffer(2, minbuf);
-	material.storageBuffer(5, minbuf);
-	material.uniformInt(3, count);
+	// material.storageBuffer(5, minbuf);
+	material.uniformFloat(3, count $ float);
 
 	bufsize => m_bufsize;
 	new float[m_bufsize] @=> maxbuf;
@@ -189,7 +186,7 @@ class Waveform extends GGen {
     fun @construct() {
 	material.storageBuffer(1, maxbuf);
 	material.storageBuffer(2, minbuf);
-	material.uniformInt(3, count);
+	material.uniformFloat(3, count $ float);
 
 	1024 => m_bufsize;
 	new float[m_bufsize] @=> maxbuf;
@@ -210,7 +207,43 @@ class Waveform extends GGen {
 	    // <<< blob.fval(0), rmsbuf[count] >>>;
 
 	    (count + 1) % m_bufsize => count;
+	    now => last_update;
 	}
+    }
+
+    // TODO rename 'Line' to 'Playhead'
+    fun int addLine() {
+	GLines line --> mesh;
+	line_positions => line.positions;
+	line.pos(@(-0.5, 0));
+	0.001 => line.width;
+	extraPlayheads << line;
+
+	return extraPlayheads.size()-1; // return idx
+    }
+
+    // sets playhead position (from 0 to 1
+    fun int setLinePos(int idx, float pos) {
+	Math.map2(pos, 0, 1, -0.5, 0.5) => float posx;
+	@(posx, 0) => extraPlayheads[idx].pos;
+	return idx;
+    }
+
+    fun int removeLinePos(int idx) {
+	// removes a line from scenegraph (but doesn't delete... for now)
+	extraPlayheads[idx] --< mesh;
+	return idx;
+    }
+
+    // get the total size of the waveform
+    fun dur size() {
+	return (WINDOW_SIZE * m_bufsize)::samp;
+    }
+
+    // got pos of main playhead
+    fun float playheadPos() {
+	(now - last_update) / WINDOW_SIZE::samp => float delta;
+	return (count + delta) / WINDOW_SIZE;
     }
 
     fun update(float dt) {
@@ -218,7 +251,14 @@ class Waveform extends GGen {
 	material.storageBuffer(2, minbuf);
 	material.storageBuffer(5, rmsbuf);
 	// material.storageBuffer(5, maxbuf);
-	material.uniformInt(3, count);
+	material.uniformInt(6, scroll);
+
+
+
+	@(playheadPos() - 0.5, 0) => playhead.pos;
+
+	// material.uniformFloat(3, count + delta);
+	material.uniformFloat(3, 0);
     }
 }
 
@@ -227,54 +267,94 @@ fun UGen @operator =>(UGen in, Waveform wav) {
     return wav.inlet;
 }
 
+GWindow.windowed(1250, 768);
+
+GG.camera().orthographic();
+GG.camera().viewSize(10.0 / 16);
+GG.camera().posZ(1.0);
+
+// audio stuff -----------------------------------------
+// GWindow.fullscreen();
+
 // adc => Waveform w(WINDOW_SIZE) => blackhole;
-SndBuf snd(me.dir() + "pyramid.wav") => Waveform w(WINDOW_SIZE) => blackhole;
+SndBuf snd(me.dir() + "pyramid.wav") => Waveform w(Waveform.WINDOW_SIZE) => blackhole;
 snd => dac;
 
 1 => snd.loop;
 
+/* sidewarp test */
+snd => SideWarp warpLeft => Pan2 left => dac;
+snd => SideWarp warpRight => Pan2 right => dac;
+
+-0.5 => left.pan;
+0.5 => right.pan;
+
+1. => warpRight.mix => warpLeft.mix;
+
+0.001 => warpLeft.threshold => warpRight.threshold;
+
+0.9 => warpRight.attack_speed;
+0.3 => warpRight.release_speed;
+
+snd => LPF lpf(100) => warpRight.sidechain;
+lpf => warpLeft.sidechain;
 
 
 
-
-// Material material;
-// PlaneGeometry plane_geo;
-
-// ShaderDesc shader_desc;
-// game_of_life_shader => shader_desc.vertexCode;
-// game_of_life_shader => shader_desc.fragmentCode;
-
-// Shader custom_shader(shader_desc); // create shader from shader_desc
-// custom_shader => material.shader; // connect shader to material
-
-// GMesh mesh(plane_geo, material) --> GG.scene();
-
-// TextureDesc conway_tex_desc;
-// WINDOW_SIZE => conway_tex_desc.width;
-// WINDOW_SIZE => conway_tex_desc.height;
-
-// Texture conway_tex_a(conway_tex_desc);
-
-// float texture_data[4 * WINDOW_SIZE * WINDOW_SIZE];
-// // TODO need a better way to specify texture size
-// conway_tex_a.write(texture_data);
-// material.texture(0, conway_tex_a);
-
-// // (initialize) write new audio data to shader
-// // material.storageBuffer(1, samples);
-// material.storageBuffer(1, w.buf);
-// material.uniformInt(2, w.count);
-// material.uniformInt(3, 2); // playhead width
+// w.pos(@(1.2,0,0.));
 
 w --> GG.scene();
+
+// fun scroll() {
+//     2::second => now;
+//     true => w.scroll;
+    // } spork~ scroll();
+
+// fun playHeadTest() {
+//     w.addLine() => int idx;
+
+//     0.0 => float pos;
+//     0.01 => float delta;
+
+//     while(true) {
+// 	w.setLinePos(idx, pos);
+// 	(pos + delta) % 1.0 => pos;
+// 	<<< pos >>>;
+// 	10::ms => now;
+//     }
+// } spork~ playHeadTest();
+
+w.addLine() => int leftLine;
+w.addLine() => int rightLine;
+
+fun setPos(int idx, SideWarp side) {
+    w.size() => dur bufsize;
+    side.sampler.recPos() - side.sampler.playPos() => dur diff;
+
+    if (diff < 0::samp) {
+	-1. * diff + side.sampler.playPos() => diff; // for now
+
+    }
+
+    diff / bufsize => float pos;
+
+    w.playheadPos() => float mainPlayheadPos;
+
+    mainPlayheadPos - pos => float relativePos;
+
+    if (relativePos < 0) {
+	1 + relativePos => relativePos;
+	// <<< "NEGATIVE", relativePos >>>;
+
+    }
+    w.setLinePos(idx, relativePos);
+}
 
 // render loop
 while (true)
 {
+    setPos(leftLine, warpLeft);
+    setPos(rightLine, warpRight);
     // synchronize
     GG.nextFrame() => now;
-    // Write new audio data to shader
-    // material.storageBuffer(1, samples);
-    // material.storageBuffer(1, w.buf);
-    // material.uniformInt(2, w.count);
 }

@@ -8,9 +8,10 @@
 @group(1) @binding(0) var src: texture_2d<f32>;
 @group(1) @binding(1) var<storage> max_samples: array<f32>;
 @group(1) @binding(2) var<storage> min_samples: array<f32>;
-@group(1) @binding(3) var<uniform> playhead: i32;
-@group(1) @binding(4) var<uniform> playhead_width: i32;
+@group(1) @binding(3) var<uniform> playhead: f32;
+@group(1) @binding(4) var<uniform> playhead_width: f32;
 @group(1) @binding(5) var<storage> rms_samples: array<f32>;
+@group(1) @binding(6) var<uniform> scrolled: i32;
 
 fn onWaveform(coords: vec2i, dim: vec2u) -> bool {
   return i32((0.5 + max_samples[coords.x] * 0.5) * f32(dim.y)) == coords.y;
@@ -32,21 +33,49 @@ fn backgroundColor() -> vec4f {
   return vec4f(0.0, 0.0, 0.0, 1.0); // black
 }
 
+fn scrolledX(uv_x: f32, dim_x: u32) -> i32 {
+  if (scrolled == 0) { return i32(uv_x * f32(dim_x)); }
 
-fn alive(coords: vec2i, dim: vec2u) -> vec4f {
-  // these should all be > 50% height
-  let pos_max : i32 = i32((0.5 + max_samples[coords.x] * 0.5) * f32(dim.y));
-  // these  should all be < 50% height
-  let pos_min : i32 = i32((0.5 + min_samples[coords.x] * 0.5) * f32(dim.y));
-  let pos_rms : i32 = i32((0.5 + rms_samples[coords.x] * 0.5) * f32(dim.y));
+
+  let scroll = playhead / f32(dim_x);
+  let x = fract(uv_x + scroll);
+  return i32(x * f32(dim_x));
+}
+
+
+fn alive(coords: vec2i, dim: vec2u, uv: vec2f) -> vec4f {
+  // how to handle two position modes:
+  // - fixed buffer - always treat [0] as the first position in the buffer
+  // - scrolling buffer - the playhead is always at the end (relative)
+
+  // let new_x : i32 = (playhead + i32(coords.x)) % i32(dim.x);
+
+  // // these should all be > 50% height
+  // let pos_max : i32 = i32((0.5 + max_samples[new_x] * 0.5) * f32(dim.y));
+  // // these  should all be < 50% height
+  // let pos_min : i32 = i32((0.5 + min_samples[new_x] * 0.5) * f32(dim.y));
+  // let pos_rms : i32 = i32((0.5 + rms_samples[new_x] * 0.5) * f32(dim.y));
+
+  let x = scrolledX(uv.x, dim.x);
+
+  let pos_max = (0.5 + max_samples[x] * 0.5) * f32(dim.y);
+  let pos_min = (0.5 + min_samples[x] * 0.5) * f32(dim.y);
+  let pos_rms = (0.5 + rms_samples[x] * 0.5) * f32(dim.y);
 
   // this works
   // let on_waveform : bool = coords.y < pos_max && coords.y > i32(dim.y) - pos_max ;
   // let on_waveform : bool = coords.y < pos_min && coords.y > pos_min ;
-  let on_waveform : bool = coords.y < pos_max && coords.y > pos_min ;
+  // let on_waveform : bool = coords.y < pos_max && coords.y > pos_min ;
 
-  let on_rms : bool = coords.y < pos_rms && coords.y > i32(dim.y) - pos_rms;
+  // let on_rms : bool = coords.y < pos_rms && coords.y > i32(dim.y) - pos_rms;
   // let on_rms : bool = coords.y < pos_rms;
+
+  let y = f32(coords.y);
+
+  let on_waveform = y < pos_max && y > pos_min;
+  let on_rms = y < pos_rms && y > f32(dim.y) - pos_rms;
+
+  let w : f32 = playhead_width;
 
   if (on_rms) {
     return rmsColor();
@@ -56,9 +85,16 @@ fn alive(coords: vec2i, dim: vec2u) -> vec4f {
     return waveformColor();
   }
 
-  if (coords.x >= playhead && coords.x <= playhead + playhead_width) {
-    return playheadColor();
+  // Playhead highlight (also UV based)
+  let px = uv.x * f32(dim.x);
+  if (abs(px - playhead) <= playhead_width * 0.5 && scrolled == 0) {
+    // return playheadColor();
   }
+
+
+  // if (new_x >= playhead && new_x <= playhead + playhead_width) {
+  //   return playheadColor();
+  // }
 
   let v = textureLoad(src, coords, 0);
   if (v.r < 0.5) {
@@ -73,8 +109,5 @@ fn fs_main(in : VertexOutput, @builtin(front_facing) is_front: bool) -> @locatio
   let dim : vec2u = textureDimensions(src);
 
   let coords = vec2i(in.v_uv * vec2f(dim));
-  return alive(coords, dim);
-  // var cell = vec4f(f32(alive(coords, dim)));
-
-  // return vec4f(cell); // render current generation
+  return alive(coords, dim, in.v_uv);
 }
