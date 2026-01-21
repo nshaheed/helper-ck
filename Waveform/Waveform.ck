@@ -81,7 +81,7 @@ class Average extends Chugen {
 }
 
 public class Waveform extends GGen {
-    1024  => static int WINDOW_SIZE;
+    1024 => static int WINDOW_SIZE;
     // a waveform buffer that takes in an audio input and will generate a waveform texture
     Gain inlet => Max max => blackhole;
     inlet => Min min => blackhole;
@@ -113,11 +113,11 @@ public class Waveform extends GGen {
 	cherr <= "can't open file: " <= filename <= " for reading..." <= IO.nl();
     }
 
-    string game_of_life_shader;
+    string waveform_shader;
 
     while(fio.more()) {
-	fio.readLine() +=> game_of_life_shader;
-	"\n" +=> game_of_life_shader;
+	fio.readLine() +=> waveform_shader;
+	"\n" +=> waveform_shader;
     }
 
     Material material;
@@ -129,8 +129,8 @@ public class Waveform extends GGen {
     // <<< plane_geo.widthSegments(), plane_geo.heightSegments() >>>;
 
     ShaderDesc shader_desc;
-    game_of_life_shader => shader_desc.vertexCode;
-    game_of_life_shader => shader_desc.fragmentCode;
+    waveform_shader => shader_desc.vertexCode;
+    waveform_shader => shader_desc.fragmentCode;
 
     Shader custom_shader(shader_desc); // create shader from shader_desc
     custom_shader => material.shader; // connect shader to material
@@ -148,18 +148,6 @@ public class Waveform extends GGen {
 
     GLines extraPlayheads[0];
 
-
-    TextureDesc conway_tex_desc;
-    WINDOW_SIZE => conway_tex_desc.width;
-    WINDOW_SIZE => conway_tex_desc.height;
-
-    Texture conway_tex_a(conway_tex_desc);
-
-    float texture_data[4 * WINDOW_SIZE * WINDOW_SIZE];
-    // TODO need a better way to specify texture size
-    conway_tex_a.write(texture_data);
-    material.texture(0, conway_tex_a);
-
     // (initialize) write new audio data to shader
     // material.storageBuffer(1, samples);
     material.storageBuffer(1, maxbuf);
@@ -171,28 +159,38 @@ public class Waveform extends GGen {
     material.uniformInt(6, scroll);
 
     fun @construct(int bufsize) {
-	material.storageBuffer(1, maxbuf);
-	material.storageBuffer(2, minbuf);
-	// material.storageBuffer(5, minbuf);
-	material.uniformFloat(3, count $ float);
-
-	bufsize => m_bufsize;
-	new float[m_bufsize] @=> maxbuf;
-	new float[m_bufsize] @=> minbuf;
-	new float[m_bufsize] @=> rmsbuf;
+	init(bufsize);
 	spork~ populateBuffer();
     }
 
     fun @construct() {
-	material.storageBuffer(1, maxbuf);
-	material.storageBuffer(2, minbuf);
-	material.uniformFloat(3, count $ float);
+	init(1024);
+	spork~ populateBuffer();
+    }
 
-	1024 => m_bufsize;
+    // init function for constructors
+    fun init(int bufsize) {
+	bufsize => m_bufsize;
+	// initialize all bufs
 	new float[m_bufsize] @=> maxbuf;
 	new float[m_bufsize] @=> minbuf;
 	new float[m_bufsize] @=> rmsbuf;
-	spork~ populateBuffer();
+
+	material.storageBuffer(1, maxbuf);
+	material.storageBuffer(2, minbuf);
+	// count?
+	material.uniformFloat(3, count $ float);
+
+	TextureDesc tex_desc;
+	m_bufsize => tex_desc.width;
+	WINDOW_SIZE => tex_desc.height;
+
+	Texture tex(tex_desc);
+
+	float texture_data[4 * bufsize * WINDOW_SIZE];
+	// TODO need a better way to specify texture size
+	tex.write(texture_data);
+	material.texture(0, tex);
     }
 
     fun populateBuffer() {
