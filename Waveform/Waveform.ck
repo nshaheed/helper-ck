@@ -255,14 +255,18 @@ public class Waveform extends GGen {
 
 
 	// when scrolling is enabled, the playhead will always be on the right side
-	if (scroll) @(0.5, 0) => playhead.pos;
+	if (scroll) {
+	    @(0.5, 0) => playhead.pos;
+	    // disappear it
+	    0 => playhead.width;
+	}
 	else @(playheadPos() - 0.5, 0) => playhead.pos;
 
 	material.uniformFloat(3, playheadPos() * WINDOW_SIZE);
     }
 }
 
-fun UGen @operator =>(UGen in, Waveform wav) {
+public UGen @operator =>(UGen in, Waveform wav) {
     in => wav.inlet;
     return wav.inlet;
 }
