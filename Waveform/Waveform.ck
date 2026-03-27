@@ -220,6 +220,14 @@ public class Waveform extends GGen {
 	return extraPlayheads.size()-1; // return idx
     }
 
+    // clear all lines in playheads
+    fun clearLines() {
+	for (auto line: extraPlayheads) {
+	    line --< mesh;
+	}
+	new GLines[0] @=> extraPlayheads;
+    }
+
     // sets playhead position (from 0 to 1
     fun int setLinePos(int idx, float pos) {
 	Math.map2(pos, 0, 1, -0.5, 0.5) => float posx;
@@ -267,6 +275,59 @@ public class Waveform extends GGen {
 public UGen @operator =>(UGen in, Waveform wav) {
     in => wav.inlet;
     return wav.inlet;
+}
+
+public class Meter extends GGen {
+    GPlane bg --> GGen group --> this;
+    GPlane peakLevel --> group;
+    GPlane avgLevel --> group;
+
+    Max peak => blackhole;
+    Max valley => blackhole;
+    Average avg => blackhole;
+
+    0.1 => group.scaX;
+
+    1.2 => bg.scaX;
+    0. => peakLevel.scaY;
+    0.0 => avgLevel.scaY;
+
+    // Color.GRAY => (bg.mat() $ PhongMaterial).color;
+    // @(0.25, 0.25, 0.95) => (avgLevel.mat() $ PhongMaterial).color;
+    // Color.GREEN => (peakLevel.mat() $ PhongMaterial).color;
+
+    Color.GRAY => bg.color;
+    @(0.25, 0.25, 0.95) => avgLevel.color;
+    Color.GREEN => peakLevel.color;
+
+    fun update(float dt) {
+	// calculate positions
+	Math.max(Math.fabs(peak.last()), Math.fabs(valley.last())) => float peakVal;
+	peakVal => peakLevel.scaY;
+	-1 * (1-peakVal) / 2 => peakLevel.posY;
+
+	avg.last() => float avgVal;
+	avgVal => avgLevel.scaY;
+	-1 * (1-avgVal) / 2 => avgLevel.posY;
+
+	// set color
+	if (peakVal > 1) {
+	    Color.RED => peakLevel.color;
+	} else {
+	    Color.GREEN => peakLevel.color;
+	}
+    }
+
+    fun connect(UGen inlet) {
+	inlet => peak;
+	inlet => valley;
+	inlet => avg;
+    }
+}
+
+public UGen @operator =>(UGen in, Meter m) {
+    m.connect(in);
+    return in;
 }
 
 GWindow.windowed(1250, 768);
@@ -362,3 +423,4 @@ while (true)
     // synchronize
     GG.nextFrame() => now;
 }
+
