@@ -40,7 +40,7 @@ public class Rec {
 
     @doc "Return Rec version as a string"
     fun static string version() {
-        return "1.2.1";
+        return "1.2.2";
     }
 
     @doc "Automatically record the DAC to a stereo file and store in specified directory & file prefix. Will prepend the datetime to the file."
@@ -52,16 +52,32 @@ public class Rec {
     @doc "(hidden)"
     fun static int isSporked() {
         // check if a rec function has been sporked already.
+	// if Rec is in the top-level shred, we are not sporked and want to initiate a spork
         if (me.ancestor().id() == me.id()) {
             return false;
-        } else {
-            return true;
+        } // if the top-level shred is not Rec (i.e. we've been sporked) and the parent sourcePath is Rec, then we
+	// are already sporked and don't want to spork again.
+	else if (me.parent().sourcePath() == me.sourcePath()) {
+	    return true;
+	} // if the top-level shred is not Rec (i.e. we've been sporked) and the parent sourcePath is *not* Rec,
+	// then Rec was called from some spork, but Rec itself has not been sporked, so we want Rec to spork.
+	else {
+            return false;
         }
     }
 
     @doc "Automatically record the DAC to a stereo file and store in the current directory. Will prepend the datetime to the file."
     fun static void auto() {
-        auto(Rec.autoPrefix());
+	// autoHelper needs to be sporked, because otherwise it's not possible to get the
+	// file path of the parent shred (because Rec is on the same shred). ChucK does
+	// not expose the call stack so this is the only way to check
+	spork~ autoHelper();
+    }
+
+    @doc "(hidden)"
+    fun static void autoHelper() {
+	// assumes this has been sporked
+	auto(Rec.autoPrefix());
     }
 
     @doc "Automatically record a mono UGen and store in specified directory. Will prepend the datetime to the file."
@@ -195,7 +211,9 @@ public class Rec {
 	me.ancestor().sourcePath() => string path;
 	"<compiled.code>" => string comp;
 	
-	<<< path >>>;
+	// <<< path >>>;
+	// <<< "me.ancestor().sourcePath()", me.ancestor().sourcePath() >>>;
+	// <<< "me.sourcePath()", me.sourcePath() >>> ;
 	
 	// case 1: ends with <compiled code> in this case, we will just do session as the prefix
 	if (path.substring(path.length() - comp.length()) == comp) {
