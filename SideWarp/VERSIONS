@@ -1,0 +1,23 @@
+---------------------
+SideWarp VERSIONS log
+---------------------
+
+1.1.0 (April 2026)
+=====================
+(added) Waveform visualization in ChuGL.
+  - Visualizes the recorded waveform and the playhead position
+  - Usage: SideWarp.inter() --> GGen;
+  - See (_examples/mic.ck)
+(added) SideWarp.max_speed
+  - Set max playback rate - this was previously fixed to 1.0
+(added) SideWarp.crossover_rate
+  - Set the crossover_rate: Once the playback rate reaches crossover_rate
+    the direction of the playback will change (i.e. from 0.5 to -0.5)
+(added) SideWarp.scroll() and SideWarp.scroll(int scroll_state)
+  - Set to 1 to enable scroll mode in the waveform, 0 to fix the waveform in space
+(fixed) clicks and pops fixed
+
+1.0.0 (December 2025)
+=====================
+(added) SideWarp effect initial release!
+  - Sidechain the playback rate of your audio input

@@ -5,6 +5,8 @@
 SndBuf pyramid(me.dir() + "pyramid.wav") => SideWarp s => Pan2 left => dac;
 pyramid => SideWarp r => Pan2 right => dac;
 
+true => pyramid.loop;
+
 -0.5 => left.pan;
 0.5 => right.pan;
 

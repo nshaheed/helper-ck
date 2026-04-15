@@ -1,24 +1,10 @@
 //-----------------------------------------------------------------------------
-// name: game-of-life.ck
-// desc: microphone input waveform as seeds for Conway's Game of Life
+// name: Waveform.ck
+// desc: Visualize an audio waveform
 //
-// author: Andrew Zhu Aday (https://ccrma.stanford.edu/~azaday/)
-//   date: Fall 2024
+// author: Nick Shahed (nshaheed@ccrma.stanford.edu)
+//   date: Fall 2025
 //-----------------------------------------------------------------------------
-/* Interesting observation:
-The fragment shader invocation is not 1:1 with pixels on the quad.
-This means at different resolutions (zoom levels / size of quad) different
-cells will be updated. If the quad is close enough / resolution is high enough,
-nevery pixel will cover a single cell and simulation will run "accurately".
-However if the quad is very far away, and each screen pixel covers multiple
-cells, not all cells will be updated. But kinda looks cool?
-
-IDEA: wrap repeat, sample OFF the grid with scaling factor n*m for INFINITE conway!!
-- requires doing as screen shader or pass clip space full-screen quad through custom geo */
-//-----------------------------------------------------------------------------
-
-@import "SideWarp"
-
 
 // get max of mic input for window size
 class Max extends Chugen {
@@ -249,7 +235,7 @@ public class Waveform extends GGen {
     // got pos of main playhead
     fun float playheadPos() {
 	(now - last_update) / WINDOW_SIZE::samp => float delta;
-	return (count + delta) / WINDOW_SIZE;
+	return (count + delta) / m_bufsize;
     }
 
     fun update(float dt) {
@@ -268,7 +254,7 @@ public class Waveform extends GGen {
 	}
 	else @(playheadPos() - 0.5, 0) => playhead.pos;
 
-	material.uniformFloat(3, playheadPos() * WINDOW_SIZE);
+	material.uniformFloat(3, playheadPos() * m_bufsize);
     }
 }
 
@@ -339,88 +325,89 @@ GG.camera().posZ(1.0);
 // audio stuff -----------------------------------------
 // GWindow.fullscreen();
 
-// adc => Waveform w(WINDOW_SIZE) => blackhole;
-SndBuf snd(me.dir() + "pyramid.wav") => Waveform w(Waveform.WINDOW_SIZE) => blackhole;
-snd => Gain sndGain(1.) => dac;
+// // adc => Waveform w(WINDOW_SIZE) => blackhole;
+// SndBuf snd(me.dir() + "pyramid.wav") => Waveform w(Waveform.WINDOW_SIZE) => blackhole;
+// snd => Gain sndGain(1.) => dac;
 
-1 => snd.loop;
+// 1 => snd.loop;
 
-/* sidewarp test */
-snd => SideWarp warpLeft => Pan2 left => dac;
-snd => SideWarp warpRight => Pan2 right => dac;
+// /* sidewarp test */
+// snd => SideWarp warpLeft => Pan2 left => dac;
+// snd => SideWarp warpRight => Pan2 right => dac;
 
--0.5 => left.pan;
-0.5 => right.pan;
+// -0.5 => left.pan;
+// 0.5 => right.pan;
 
-1. => warpRight.mix => warpLeft.mix;
+// 1. => warpRight.mix => warpLeft.mix;
 
-0.001 => warpLeft.threshold => warpRight.threshold;
+// 0.001 => warpLeft.threshold => warpRight.threshold;
 
-0.9 => warpRight.attack_speed;
-0.3 => warpRight.release_speed;
+// 0.9 => warpRight.attack_speed;
+// 0.3 => warpRight.release_speed;
 
-snd => LPF lpf(100) => warpRight.sidechain;
-lpf => warpLeft.sidechain;
+// snd => LPF lpf(100) => warpRight.sidechain;
+// lpf => warpLeft.sidechain;
 
-0 => sndGain.gain => warpLeft.gain;
+// 0 => sndGain.gain => warpLeft.gain;
 
-// w.pos(@(1.2,0,0.));
+// // w.pos(@(1.2,0,0.));
 
-w --> GG.scene();
+// w --> GG.scene();
 
-// fun scroll() {
-//     2::second => now;
-//     true => w.scroll;
-    // } spork~ scroll();
+// // fun scroll() {
+// //     2::second => now;
+// //     true => w.scroll;
+//     // } spork~ scroll();
 
-// fun playHeadTest() {
-//     w.addLine() => int idx;
+// // fun playHeadTest() {
+// //     w.addLine() => int idx;
 
-//     0.0 => float pos;
-//     0.01 => float delta;
+// //     0.0 => float pos;
+// //     0.01 => float delta;
 
-//     while(true) {
-// 	w.setLinePos(idx, pos);
-// 	(pos + delta) % 1.0 => pos;
-// 	<<< pos >>>;
-// 	10::ms => now;
+// //     while(true) {
+// // 	w.setLinePos(idx, pos);
+// // 	(pos + delta) % 1.0 => pos;
+// // 	<<< pos >>>;
+// // 	10::ms => now;
+// //     }
+// // } spork~ playHeadTest();
+
+// w.addLine() => int leftLine;
+// w.addLine() => int rightLine;
+
+// fun setPos(int idx, SideWarp side) {
+//     w.size() => dur bufsize;
+//     side.sampler.recPos() - side.sampler.playPos() => dur diff;
+
+//     if (diff < 0::samp) {
+// 	-1. * diff + side.sampler.playPos() => diff; // for now
 //     }
-// } spork~ playHeadTest();
 
-w.addLine() => int leftLine;
-w.addLine() => int rightLine;
+//     diff / bufsize => float pos;
 
-fun setPos(int idx, SideWarp side) {
-    w.size() => dur bufsize;
-    side.sampler.recPos() - side.sampler.playPos() => dur diff;
+//     w.playheadPos() => float mainPlayheadPos;
 
-    if (diff < 0::samp) {
-	-1. * diff + side.sampler.playPos() => diff; // for now
-    }
+//     // todo there should be some mechanism for handling this in the class?
+//     if (w.scroll) 1.0 => mainPlayheadPos;
 
-    diff / bufsize => float pos;
+//     mainPlayheadPos - pos => float relativePos;
 
-    w.playheadPos() => float mainPlayheadPos;
+//     if (relativePos < 0) {
+// 	1 + relativePos => relativePos;
+// 	// <<< "NEGATIVE", relativePos >>>;
 
-    // todo there should be some mechanism for handling this in the class?
-    if (w.scroll) 1.0 => mainPlayheadPos;
+//     }
+//     w.setLinePos(idx, relativePos);
+// }
 
-    mainPlayheadPos - pos => float relativePos;
+// // render loop
+// while (true)
+// {
+//     setPos(leftLine, warpLeft);
+//     setPos(rightLine, warpRight);
+//     // synchronize
+//     GG.nextFrame() => now;
+// }
 
-    if (relativePos < 0) {
-	1 + relativePos => relativePos;
-	// <<< "NEGATIVE", relativePos >>>;
-
-    }
-    w.setLinePos(idx, relativePos);
-}
-
-// render loop
-while (true)
-{
-    setPos(leftLine, warpLeft);
-    setPos(rightLine, warpRight);
-    // synchronize
-    GG.nextFrame() => now;
-}
 
