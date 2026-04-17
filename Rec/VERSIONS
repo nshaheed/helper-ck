@@ -1,0 +1,11 @@
+------------------
+Rec VERSIONS log
+------------------
+
+1.2.2 (April 2026)
+=======
+=> Fix two bugs where, depending on the location in the call stack of the
+   shred where Rec was called:
+   * Rec.auto() would save the file in the directory where Rec.ck was located
+   * Rec calls would block the shred, rather than spork, and prevent the shred
+     from advancing.
