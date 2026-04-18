@@ -2,7 +2,7 @@
     "arch": "all",
     "files": [
         {
-            "checksum": "bdd48499e65a475b3cc770759aeb8fc383df89133d2c84d640f19485a37eb3a4",
+            "checksum": "528bb9207784dc7d9ee815798d636e5c25a697ebaa15f23854dcf4e2ffeaa476",
             "file_type": "zip",
             "local_dir": "./",
             "url": "https://ccrma.stanford.edu/~nshaheed/chugins/Rec/1.2.2/Rec.zip"
