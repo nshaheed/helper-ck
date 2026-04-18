@@ -39,6 +39,10 @@ ver.addFile("Rec.ck");
 ver.addExampleFile("_examples/basic.ck");
 ver.addExampleFile("_examples/ugen.ck");
 
+ver.addDocsFile("ckdoc/index.html");
+ver.addDocsFile("ckdoc/ckdoc.css");
+ver.addDocsFile("ckdoc/Rec.html");
+
 "chugins/Rec/" + ver.version() + "/Rec.zip" => string path; // path?
 
 // wrap up all our files into a zip file, and tell Chumpinate what URL

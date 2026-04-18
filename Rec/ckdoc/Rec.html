@@ -1,0 +1,88 @@
+<html>
+<link rel="stylesheet" type="text/css" href="ckdoc.css" />
+<link rel="stylesheet" type="text/css" href="class.css" />
+<title>Rec Class</title>
+<body>
+<a name="top"/>
+<div id="title">
+<div class="titleL">
+<div style="display: flex; align-items: center;"><div class="inline titlelogo"><a href="https://chuck.stanford.edu/" target="_blank"><img src="https://chuck.stanford.edu/doc/images/chuck-logo2023w.png" /> </div><div class="inline"><h1><a href="./">ChucK Class Library Reference</a></h1></div>
+<div class="inline gray"><h1>&nbsp;&nbsp;<span style="color:black">/</span>&nbsp;&nbsp;Rec Class</h1></div>
+</div>
+</div>
+</div>
+<div id="body">
+<div class="toc"><a id="toc"/>
+<p class="toc_class"><a href="#Rec" class="ckdoc_typename ckdoc_type_object">Rec</a></p>
+</div>
+<div class="classes">
+<p class="group_desc">This Rec class provides helper functionality for recording to audio files. It supports recording from dac, ugens, and arrays of ugens.</p>
+<a name="Rec" /><div class="class">
+<h2 class="class_title" name="Rec">Rec</h2>
+<h4><span class="class_inherits">inherits</span> : <a href="" class="ckdoc_typename ckdoc_type_object">Object</a> </h4>
+<p class="class_description">A class that provides helper functionality for recording to audio files.<p>
+<h3 class="class_section_header">examples</h3><div class="examples"><ul>
+<li><a target="_blank" href="../_examples/basic.ck">basic.ck</a></li>
+<li><a target="_blank" href="../_examples/ugen.ck">ugen.ck</a></li>
+</ul></div>
+<h3 class="class_section_header">constructors</h3>
+<div class="members">
+<div class="member">
+<p class="member_declaration"><span class="membername">Rec</span>()</p>
+<p class="member_description">Default constructor for Rec.</p>
+</div>
+</div>
+<h3 class="class_section_header">static member functions</h3>
+<div class="members">
+<div class="member">
+<p class="member_declaration"><span class="ckdoc_typename ckdoc_type_primitive">void</span> <span class="membername">auto</span>(<span class="ckdoc_typename ckdoc_type_object">string</span> dir)</p>
+<p class="member_description">Automatically record the DAC to a stereo file and store in specified directory & file prefix. Will prepend the datetime to the file.</p>
+</div>
+<div class="member">
+<p class="member_declaration"><span class="ckdoc_typename ckdoc_type_primitive">void</span> <span class="membername">auto</span>()</p>
+<p class="member_description">Automatically record the DAC to a stereo file and store in the current directory. Will prepend the datetime to the file.</p>
+</div>
+<div class="member">
+<p class="member_declaration"><span class="ckdoc_typename ckdoc_type_primitive">void</span> <span class="membername">auto</span>(<span class="ckdoc_typename ckdoc_type_ugen">UGen</span> ugen)</p>
+<p class="member_description">Automatically record a UGen and store in the current directory. Will prepend the datetime to the file and handle different numbers of channels automatically.</p>
+</div>
+<div class="member">
+<p class="member_declaration"><span class="ckdoc_typename ckdoc_type_primitive">void</span> <span class="membername">auto</span>(<span class="ckdoc_typename ckdoc_type_object">UGen</span><span class="typename">[]</span> ugen)</p>
+<p class="member_description">Automatically record an array of UGens and store in the current directory. Will prepend the datetime to the files (one file per UGen).</p>
+</div>
+<div class="member">
+<p class="member_declaration"><span class="ckdoc_typename ckdoc_type_primitive">void</span> <span class="membername">autoMono</span>(<span class="ckdoc_typename ckdoc_type_ugen">UGen</span> ugen, <span class="ckdoc_typename ckdoc_type_object">string</span> dir)</p>
+<p class="member_description">Automatically record a mono UGen and store in specified directory. Will prepend the datetime to the file.</p>
+</div>
+<div class="member">
+<p class="member_declaration"><span class="ckdoc_typename ckdoc_type_primitive">void</span> <span class="membername">autoMonoFilepath</span>(<span class="ckdoc_typename ckdoc_type_ugen">UGen</span> ugen, <span class="ckdoc_typename ckdoc_type_object">string</span> filepath)</p>
+<p class="member_description">Automatically record a mono UGen and store in specified filepath. Will prepend the datetime to the file.</p>
+</div>
+<div class="member">
+<p class="member_declaration"><span class="ckdoc_typename ckdoc_type_primitive">void</span> <span class="membername">autoMulti</span>(<span class="ckdoc_typename ckdoc_type_ugen">UGen</span> ugen, <span class="ckdoc_typename ckdoc_type_object">string</span> dir)</p>
+<p class="member_description">Automatically record a multichannels UGen and store in specified directory. Will prepend the datetime to the files (one file per channel).</p>
+</div>
+<div class="member">
+<p class="member_declaration"><span class="ckdoc_typename ckdoc_type_primitive">void</span> <span class="membername">autoStereo</span>(<span class="ckdoc_typename ckdoc_type_ugen">UGen</span> ugen, <span class="ckdoc_typename ckdoc_type_object">string</span> dir)</p>
+<p class="member_description">Automatically record a stereo UGen and store in specified directory. Will prepend the datetime to the file.</p>
+</div>
+<div class="member">
+<p class="member_declaration"><span class="ckdoc_typename ckdoc_type_primitive">void</span> <span class="membername">mono</span>(<span class="ckdoc_typename ckdoc_type_ugen">UGen</span> ugen, <span class="ckdoc_typename ckdoc_type_object">string</span> filepath)</p>
+<p class="member_description">Record mono UGen to a specified file.</p>
+</div>
+<div class="member">
+<p class="member_declaration"><span class="ckdoc_typename ckdoc_type_primitive">void</span> <span class="membername">stereo</span>(<span class="ckdoc_typename ckdoc_type_ugen">UGen</span> ugen, <span class="ckdoc_typename ckdoc_type_object">string</span> filepath)</p>
+<p class="member_description">Record stereo UGen to a specified file.</p>
+</div>
+<div class="member">
+<p class="member_declaration"><span class="ckdoc_typename ckdoc_type_object">string</span> <span class="membername">version</span>()</p>
+<p class="member_description">Return Rec version as a string.</p>
+</div>
+</div>
+<p class="top_link">[ <a href="#top">top</a> ]</p>
+</div>
+<hr />
+</div>
+</div>
+</body>
+</html>

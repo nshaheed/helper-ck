@@ -35,14 +35,14 @@ spork~ Rec.auto(s); // just pass in the ugen and viola! it's recording
 etc., etc.
 ******************************/
 
-// @doc "A class that provides helper functionality for recording to audio files."
-// @example "basic.ck"
-// @example "ugen.ck"
+@doc "A class that provides helper functionality for recording to audio files."
+@example "basic.ck"
+@example "ugen.ck"
 public class Rec {
 
     @doc "Return Rec version as a string"
     fun static string version() {
-        return "1.2.2";
+        return "1.2.3";
     }
 
     @doc "Automatically record the DAC to a stereo file and store in specified directory & file prefix. Will prepend the datetime to the file."
