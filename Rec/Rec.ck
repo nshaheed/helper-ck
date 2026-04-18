@@ -35,7 +35,9 @@ spork~ Rec.auto(s); // just pass in the ugen and viola! it's recording
 etc., etc.
 ******************************/
 
-@doc "A class that provides helper functionality for recording to audio files."
+// @doc "A class that provides helper functionality for recording to audio files."
+// @example "basic.ck"
+// @example "ugen.ck"
 public class Rec {
 
     @doc "Return Rec version as a string"
@@ -78,6 +80,9 @@ public class Rec {
     fun static void autoHelper() {
 	// assumes this has been sporked
 	auto(Rec.autoPrefix());
+
+	// This needs to keep running or else the auto shred will be killed
+	while (true) 1::second => now;
     }
 
     @doc "Automatically record a mono UGen and store in specified directory. Will prepend the datetime to the file."

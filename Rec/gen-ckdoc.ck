@@ -16,8 +16,10 @@ doc.addGroup(
     "This Rec class provides helper functionality for recording to audio files. It supports recording from dac, ugens, and arrays of ugens."
 );
 
+"../_examples" => doc.examplesRoot;
+
 // sort for now until order is preserved by CKDoc
 doc.sort(true);
 
 // generate
-doc.outputToDir( "./ckdoc", "Rec API Reference" );
+doc.outputToDir( "./ckdoc", "Rec API Reference (v" + Rec.version() + ")" );

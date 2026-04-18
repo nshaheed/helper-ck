@@ -29,7 +29,7 @@ Package pkg("Rec");
 // Now we need to define a specific PackageVersion for test-pkg
 PackageVersion ver("Rec", version);
 
-"1.5.4.2" => ver.languageVersionMin; // what version?
+"1.5.5.8" => ver.languageVersionMin; // what version?
 
 "any" => ver.os;
 "all" => ver.arch;
