@@ -31,3 +31,11 @@ And then convert it:
 ```bash
 python keras2ck.py --output_name model.txt model.keras
 ```
+
+And then you can load it into ChucK!
+
+```chuck
+MLP mlp;
+
+mlp.load(me.dir() + "model.txt");
+```
