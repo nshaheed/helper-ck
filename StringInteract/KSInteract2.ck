@@ -36,8 +36,8 @@ public class Interference extends Chugen {
     // <<< "Past" >>>;
 
     for (int i; i < _mod.size(); i++) {
-      _mod[0] @=> UGen mod;
-      _delay_idx[0] => dur idx;
+      _mod[i] @=> UGen mod;
+      _delay_idx[i] => dur idx;
       _delay.valueAt(idx) => float val;
 
       mod.last() + _offset => float mod_pos_offset;
@@ -89,6 +89,13 @@ public class Interference extends Chugen {
   fun UGen mod(UGen mod) {
     _mod << mod;
     _delay_idx << 4::samp;
+
+    return mod;
+  }
+
+  fun UGen mod(UGen mod, dur idx) {
+    _mod << mod;
+    _delay_idx << idx;
 
     return mod;
   }
