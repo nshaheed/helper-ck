@@ -1,8 +1,8 @@
-@import "KSInteract2"
+@import "../KSInteract2"
 @import "Rec"
 @import "PlinkyRev"
 
-Rec.stereo(dac, "demo_lattice.wav");
+Rec.stereo(dac, "lattice.wav");
 
 // SinOsc s1 => ADSR e1(1::ms, 1::ms, 0.9, 1::second) => String str1 => GainDB g1(-18) => dac.left;
 // SinOsc s2(441) => ADSR e2(1::ms, 1::ms, 0.9, 1::second) => String str2 => GainDB g2(-18) => dac.right;

@@ -1,7 +1,7 @@
-@import "KSInteract2"
+@import "../KSInteract2"
 @import "Rec"
 
-Rec.stereo(dac, "demo_single.wav");
+Rec.stereo(dac, "single.wav");
 
 SinOsc s1 => ADSR e1(1::ms, 1::ms, 0.9, 1::second) => String str1 => GainDB g1(-18) => dac;
 

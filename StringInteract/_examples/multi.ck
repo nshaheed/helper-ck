@@ -1,4 +1,4 @@
-@import "KSInteract2"
+@import "../KSInteract2"
 @import "Rec"
 
 SinOsc s1 => ADSR e1(1::ms, 1::ms, 0.9, 1::second) => String str1 => GainDB g1(-18) => dac;
@@ -19,7 +19,7 @@ str2.inter.mod(str3, 48::samp);
 0.9 => str2.inter.offset;
 -0.9 => str3.inter.offset;
 
-Rec.stereo(dac, "demo_mutli.wav");
+Rec.stereo(dac, "mutli.wav");
 
 // e3.keyOn(); 8.01::second => now; e3.keyOff();
 // env2.keyOn(); 0.01::second => now; env2.keyOff();
