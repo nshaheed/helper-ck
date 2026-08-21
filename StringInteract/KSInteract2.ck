@@ -44,7 +44,7 @@ public class Interference extends Chugen {
 
       _delay.valueAt(idx) => float carr_pos;
 
-      "" => string debug;
+      "note3" => string debug;
 
       if (print_col) {
 	chout <= "name\tval\tmod\tmod_po\tmod_po2\tcurr_p\tout\tplay\trec" <= IO.nl();
@@ -112,6 +112,16 @@ public class String extends Chugraph {
 
   -1 => lowpass.zero;
   0.999 => block.blockZero;
+
+  @doc "get length of delay line"
+  fun dur delay() {
+    return inter._delay._delay;
+  }
+
+  @doc "set length of delay line"
+  fun dur delay(dur d) {
+    return inter._delay.delay(d);
+  }
 }
 
 // SinOsc s3(220) => ADSR e3(1::ms, 1::ms, 0.9, 1::second) => String str1 => dac;

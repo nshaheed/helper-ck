@@ -12,7 +12,6 @@ public class DelayB extends Chugraph {
   samp => _l.rampUp;
 
   fun dur delay(dur d) {
-    <<< "Dealy!" >>>;
     d => _l.duration;
     d-samp => _l.recPos;
     d => _delay;
