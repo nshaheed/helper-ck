@@ -35,6 +35,8 @@ string onstrings2[0];
 // [1., 1.5, 1 + 6./5.] @=> float ratios[];
 [1., 0.5 * 3./4, 0.5 * 5./6.] @=> float ratios[];
 
+TextBox letters[2][size];
+Waveform wvfrms[2][size];
 
 // strings 2 declarations
 3 => int size2;
@@ -42,8 +44,9 @@ String strs2[2][size2];
 Pan2 pans2[2][size];
 [1., 0.5 * 3./4, 0.5 * 5./6.] @=> float ratios2[];
 
-TextBox letters[2][size];
-Waveform wvfrms[2][size];
+TextBox letters2[2][size2];
+Waveform wvfrms2[2][size2];
+
 
 // set up strings
 for (int i; i < 2; i++) {
@@ -446,6 +449,7 @@ RhythmBoxes rboxes --> GG.scene();
 
 [["Q","W","E"],["D","S","A"]] @=> string letter_keys[][];
 
+// set up waveform/string visuals
 for (int i; i < 2; i++) {
   for (int j; j < size; j++) {
     // 1 => i;
