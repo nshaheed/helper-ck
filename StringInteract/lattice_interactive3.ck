@@ -444,7 +444,7 @@ RhythmBoxes rboxes --> GG.scene();
 2 => float WAVEFORM_Y;
 
 
-[["Q","W","E"],["A","S","D"]] @=> string letter_keys[][];
+[["Q","W","E"],["D","S","A"]] @=> string letter_keys[][];
 
 for (int i; i < 2; i++) {
   for (int j; j < size; j++) {
@@ -539,9 +539,9 @@ while( true )
   if (GWindow.keyUp(GWindow.KEY_Q)) toggleOnstrings("00", onstrings, letters);
   if (GWindow.keyUp(GWindow.KEY_W)) toggleOnstrings("01", onstrings, letters);
   if (GWindow.keyUp(GWindow.KEY_E)) toggleOnstrings("02", onstrings, letters);
-  if (GWindow.keyUp(GWindow.KEY_A)) toggleOnstrings("10", onstrings, letters);
+  if (GWindow.keyUp(GWindow.KEY_D)) toggleOnstrings("10", onstrings, letters);
   if (GWindow.keyUp(GWindow.KEY_S)) toggleOnstrings("11", onstrings, letters);
-  if (GWindow.keyUp(GWindow.KEY_D)) toggleOnstrings("12", onstrings, letters);
+  if (GWindow.keyUp(GWindow.KEY_A)) toggleOnstrings("12", onstrings, letters);
 
   if (GWindow.keyUp(GWindow.KEY_I)) toggleOnstrings("00", onstrings2, null);
   if (GWindow.keyUp(GWindow.KEY_O)) toggleOnstrings("01", onstrings2, null);
@@ -549,8 +549,6 @@ while( true )
   if (GWindow.keyUp(GWindow.KEY_J)) toggleOnstrings("10", onstrings2, null);
   if (GWindow.keyUp(GWindow.KEY_K)) toggleOnstrings("11", onstrings2, null);
   if (GWindow.keyUp(GWindow.KEY_L)) toggleOnstrings("12", onstrings2, null);
-
-
 
   updateLetters();
 }
