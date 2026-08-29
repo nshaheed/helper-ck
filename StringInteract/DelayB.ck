@@ -11,6 +11,10 @@ public class DelayB extends Chugraph {
   second - samp => _l.recPos;
   samp => _l.rampUp;
 
+  fun @construct(dur d) {
+    delay(d);
+  }
+
   fun dur delay(dur d) {
     d => _l.duration;
     d-samp => _l.recPos;
@@ -39,6 +43,10 @@ public class DelayB extends Chugraph {
 
     // d => _delay;
     // return d;
+  }
+
+  fun dur delay() {
+    return _delay;
   }
 
   fun float feedback(float f) {

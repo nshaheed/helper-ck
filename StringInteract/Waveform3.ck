@@ -1,4 +1,4 @@
-@import "KSInteract2"
+@import "KSInteract3"
 
 @doc "adapted from the sndpeek example"
 public class Waveform extends GGen {
@@ -13,12 +13,12 @@ public class Waveform extends GGen {
   // color0
   @(.4, .4, 1) => vec3 _color;
   // @(1, .4, .4) => vec3 _highlight_color;
-  Color.YELLOW => vec3 _highlight_color;
+  Color.YELLOW => vec3 _highlight_color;  
   Color.RED => vec3 _clip_color;
   waveform.color( _color );
 
   String input;
-  (input.inter._delay._delay / samp) $ int => WINDOW_SIZE;
+  (input.delay() / samp) $ int => WINDOW_SIZE;
 
   // get a reference for our window for visual tapering of the waveform
   // Windowing.hann(WINDOW_SIZE) @=> float window[];
@@ -35,9 +35,9 @@ public class Waveform extends GGen {
   fun @construct(String s) {
     s @=> input;
 
-    (input.inter._delay._delay / samp) $ int => WINDOW_SIZE;
+    (input.delay() / samp) $ int => WINDOW_SIZE;
     Windowing.rectangle(WINDOW_SIZE) @=> window;
-
+    
     float samps[WINDOW_SIZE] @=> samples;
     vec2 poses[WINDOW_SIZE] @=> positions;
     vec3 cols[WINDOW_SIZE] @=> colors;
@@ -48,7 +48,7 @@ public class Waveform extends GGen {
 
       }
     }
-
+    
   }
 
   @doc "Set width of waveform lines"
@@ -71,7 +71,7 @@ public class Waveform extends GGen {
   @doc "Get color of waveform"
   fun vec3 color() {
     return _color;
-  }
+  }  
 
   // map String delay line to 3D positions
   fun void map2waveform( float in[], vec2 out[], vec3 out_color[] )
@@ -81,7 +81,7 @@ public class Waveform extends GGen {
       cherr <= "size mismatch in map2waveform()" <= IO.nl();
       return;
     }
-
+    
     // mapping to xyz coordinate
     DISPLAY_WIDTH => float width;
     for (int i; i < in.size(); i++)
@@ -120,9 +120,9 @@ public class Waveform extends GGen {
 
   fun void doAudio() {
     // update audio from String buffer
-    (input.inter._delay._delay / samp) $ int => int bufsize;
+    (input.delay() / samp) $ int => int bufsize;
     for (int i; i < bufsize; i++) {
-      input.inter._delay.valueAt(i::samp) => samples[i];
+      input.valueAt(i::samp) => samples[i];
     }
   }
 
@@ -135,8 +135,7 @@ public class Waveform extends GGen {
     waveform.positions( positions ); // chugl
     waveform.colors( colors );
 
-    // letter position
-
+    // letter positions
   }
 
   fun void highlight() {

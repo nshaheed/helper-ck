@@ -16,6 +16,6 @@ str2 => str1.inter.mod;
 
 // e3.keyOn(); 8.01::second => now; e3.keyOff();
 // env2.keyOn(); 0.01::second => now; env2.keyOff();
-e2.keyOn(); e1.keyOn(); 3::second => now; e2.keyOff();e1.keyOff();
+e2.keyOn(); e1.keyOn(); 3::second => now; e2.keyOff(); e1.keyOff();
 
 4::second => now;

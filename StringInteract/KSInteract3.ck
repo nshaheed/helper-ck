@@ -1,4 +1,5 @@
-// @import "Interference/Interference.chug"
+@import "Interference/Interference.chug"
+@import "DelayB"
 
 // in this one instead of having a tick function, define each string
 // as a line of delays, where they're broken up by the intersection
@@ -18,65 +19,65 @@
 // it's the smallest footprint i can get
 //
 // TODO replace this with a chugin
-public class Interference extends Chugen {
-  UGen @ _mod;
-  // UGen @ _carr; // not sure about this? maybe just use inlet
+// public class Interference extends Chugen {
+//   UGen @ _mod;
+//   // UGen @ _carr; // not sure about this? maybe just use inlet
 
-  0.75 => float _offset;
+//   0.75 => float _offset;
 
-  // fun @construct(UGen carr, UGen mod) {
-  //   carr @=> _carr;
-  //   mod @=> _mod;
-  // }
+//   // fun @construct(UGen carr, UGen mod) {
+//   //   carr @=> _carr;
+//   //   mod @=> _mod;
+//   // }
 
-  fun @construct(UGen mod) {
-    mod @=> _mod;
-  }
+//   fun @construct(UGen mod) {
+//     mod @=> _mod;
+//   }
 
-  fun @construct(float offset) {
-    offset => _offset;
-  }
+//   fun @construct(float offset) {
+//     offset => _offset;
+//   }
 
-  fun @construct(UGen mod, float offset) {
-    mod @=> _mod;
-    offset => _offset;
-  }
+//   fun @construct(UGen mod, float offset) {
+//     mod @=> _mod;
+//     offset => _offset;
+//   }
 
-  fun UGen mod() {
-    return _mod;
-  }
+//   fun UGen mod() {
+//     return _mod;
+//   }
 
-  fun UGen mod(UGen md) {
-    md @=> _mod;
-    return _mod;
-  }
+//   fun UGen mod(UGen md) {
+//     md @=> _mod;
+//     return _mod;
+//   }
 
-  fun float offset() {
-    return _offset;
-  }
+//   fun float offset() {
+//     return _offset;
+//   }
 
-  fun float offset(float o) {
-    o => _offset;
-    return _offset;
-  }
+//   fun float offset(float o) {
+//     o => _offset;
+//     return _offset;
+//   }
 
-  fun float tick(float in) {
-    if (!_mod) return in;
+//   fun float tick(float in) {
+//     if (!_mod) return in;
 
-    in => float carr_pos;
+//     in => float carr_pos;
     
-    _mod.last() + _offset => float mod_pos_offset;
+//     _mod.last() + _offset => float mod_pos_offset;
 
-    if (_offset >= 0. && mod_pos_offset < in) {
-      mod_pos_offset => carr_pos;
-    }
-    if (_offset < 0. && mod_pos_offset > in) {
-      mod_pos_offset => carr_pos;
-    }
+//     if (_offset >= 0. && mod_pos_offset < in) {
+//       mod_pos_offset => carr_pos;
+//     }
+//     if (_offset < 0. && mod_pos_offset > in) {
+//       mod_pos_offset => carr_pos;
+//     }
 
-    return carr_pos;
-  }
-}
+//     return carr_pos;
+//   }
+// }
 
 // TODO replace time finding linked list with a tree?
 public class String extends Chugraph {
@@ -171,6 +172,51 @@ public class String extends Chugraph {
     return left;
   }
 
+  fun float valueAt(dur idx) {
+    // TODO implement this
+
+    if (idx < 0::samp || idx > L::samp) {
+      cherr <= "[String] trying to add modulator outside of delay line size" <= IO.nl();
+      <<< "idx", idx, "L", L >>>;
+      return 0;
+    }
+
+    // find node in _delays that contains point idx to split;
+    _delays @=> LinkedList curr @=> LinkedList prev;
+    curr.next() @=> LinkedList next;
+    0::samp => dur cumulative;
+
+    while(curr && cumulative + curr.delayDur() <= idx) {
+      curr.delayDur() +=> cumulative;
+
+      curr @=> prev;
+      curr.next() @=> curr;
+    }
+    curr.next() @=> next;
+
+    // yes this comparing floats, deal with it
+    if (idx == cumulative) return prev.delay().valueAt(0::samp);
+
+    idx - cumulative => dur split_point;
+    return curr.delay().valueAt(split_point);
+
+    // // split the delay line into two
+    // idx - cumulative => dur split1;
+    // curr.delayDur() - split1 => dur split2;
+
+    // LinkedList left(null, split1, prev);
+    // LinkedList right(curr.mod(), split2, left);
+
+    // if (next) {
+    //   next => right.next;
+    // }
+    // // if the first element of the list is being replace,
+    // // set the member var properly
+    // if (curr == _delays) left @=> _delays;
+
+    // return left;
+  }
+
   @doc "connect two strings at specified indexes along the strings"
   fun static void link(String str1, dur idx1, String str2, dur idx2, float offset) {
     str1.getAt(idx1) @=> LinkedList ll1;
@@ -240,8 +286,13 @@ public class String extends Chugraph {
     _delays @=> LinkedList del;
 
     while(del) {
-      prev => del.delay() => del.inter();
+      // prev => del.delay() => del.inter();
+      prev => del.delay() => del.inter().chan(0);
 
+      <<< "del mod", del.mod() >>>;
+      // eon => now;
+      if (del.mod() != null) del.mod() => del.inter().chan(1);
+	
       del.inter() @=> prev;
       del.next() @=> del;
     }
@@ -274,19 +325,19 @@ public class String extends Chugraph {
 }
 
 class Node {
-  Delay delay;
+  DelayB delay;
   Interference inter;
   null @=> UGen mod;
   
   null @=> LinkedList parent;
 
-  fun @construct(LinkedList par, UGen md, Delay del) {
+  fun @construct(LinkedList par, UGen md, DelayB del) {
     md @=> mod;
     del @=> delay;
     par @=> parent;
   }
 
-  fun @construct(UGen md, Delay del) {
+  fun @construct(UGen md, DelayB del) {
     md @=> mod;
     del @=> delay;
   }
@@ -301,23 +352,23 @@ class LinkedList {
     n @=> _curr;
   }
 
-  fun @construct(UGen mod, Delay delay) {
+  fun @construct(UGen mod, DelayB delay) {
     new Node(this, mod, delay) @=> _curr;
   }
 
-  fun @construct(UGen mod, Delay delay, LinkedList prev) {
+  fun @construct(UGen mod, DelayB delay, LinkedList prev) {
     // <<< "insdie construct" >>>;
     new Node(this, mod, delay) @=> _curr;
     this._curr @=> prev._next;
   }
 
   fun @construct(UGen mod, dur delay, LinkedList prev) {
-    new Node(this, mod, new Delay(delay)) @=> _curr;
+    new Node(this, mod, new DelayB(delay)) @=> _curr;
     this._curr @=> prev._next;
   }  
 
   fun @construct(dur d) {
-    new Node(this, null, new Delay(d)) @=> _curr;
+    new Node(this, null, new DelayB(d)) @=> _curr;
   }    
 
   fun LinkedList next() {
@@ -330,7 +381,7 @@ class LinkedList {
     return nxt;
   }
 
-  fun Delay delay() {
+  fun DelayB delay() {
     return _curr.delay;
   }
 
@@ -339,12 +390,12 @@ class LinkedList {
   }
 
   fun UGen mod() {
-    return _curr.inter.mod();
+    return _curr.mod;
   }
 
   fun UGen mod(UGen m) {
-    m => _curr.inter.mod;
-    return _curr.inter.mod();
+    m @=> _curr.mod;
+    return _curr.mod;
   }
 
   fun dur delayDur() {
@@ -391,7 +442,7 @@ SinOsc sA => ADSR eA(1::ms, 1::ms, 0.9, 1::second) => String strA(250::samp) => 
 
 SinOsc sB(441) => ADSR eB(1::ms, 1::ms, 0.9, 1::second) => String strB(3*1.5*250::samp) => GainDB gB(-18) => dac.right;
 
-// String.link(strA, 4::samp, strB, 4::samp, 0.9);
+String.link(strA, 4::samp, strB, 4::samp, 0.9);
 
 strA.connect();
 strB.connect();
