@@ -223,11 +223,23 @@ public class String extends Chugraph {
     str2.getAt(idx2) @=> LinkedList ll2;
 
     offset => ll1.offset;
-    offset => ll2.offset;
+    -1. * offset => ll2.offset;
 
     // set inter modulator
     ll2.delay() => ll1.mod;
     ll1.delay() => ll2.mod;
+  }
+
+  // TODO find a better way to individually set offsets
+  fun float offset(float off) {
+    _delays @=> LinkedList curr;
+
+    while (curr) {
+      off => curr.offset;
+      curr.next() @=> curr;
+    }
+
+    return off;
   }
 
   // add modulations to delay lines
