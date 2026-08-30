@@ -1,4 +1,5 @@
 @import "KSInteract3"
+@import "PlinkyRev
 
 SinOsc sA => ADSR eA(1::ms, 1::ms, 0.9, 1::second) => String strA(250::samp) => GainDB gA(-18) => dac.left;
 
@@ -18,5 +19,51 @@ eA.keyOn(); eB.keyOn(); 3::second => now; eA.keyOff(); eB.keyOff();
 0.1::second => now;
 eA.keyOn(); 3::second => now; eA.keyOff();
 
-4::second => now;
+4.5::second => now;
 
+eA.keyOn(); eB.keyOn(); 3::second => now; eA.keyOff(); eB.keyOff();
+0.1::second => now;
+eA.keyOn(); 3::second => now; eA.keyOff();
+
+4.5::second => now;
+
+3::second => eA.releaseTime => eB.releaseTime;
+// this sounds cools af
+0.5 => sA.gain => sB.gain;
+eA.keyOn(); eB.keyOn(); 8::second => now; eA.keyOff(); eB.keyOff();
+
+0.1::second => now;
+1::second => eA.releaseTime => eB.releaseTime;
+eA.keyOn(); 3::second => now; eA.keyOff();
+
+3::second => now;
+
+1.0 => sB.gain;
+1.0 => sA.gain;
+eA.keyOn(); eB.keyOn(); 1::second => now; eA.keyOff(); eB.keyOff();
+100::ms => now;
+// eA.keyOn(); eB.keyOn(); 1::second => now; eA.keyOff(); eB.keyOff();
+eA.keyOn(); 900::ms => now; eA.keyOff();
+100::ms => now;
+eA.keyOn(); 900::ms => now; eA.keyOff();
+100::ms => now;
+eA.keyOn(); 900::ms => now; eA.keyOff();
+100::ms => now;
+eA.keyOn(); 900::ms => now; eA.keyOff();
+100::ms => now;
+eA.keyOn(); 900::ms => now; eA.keyOff();
+100::ms => now;
+eA.keyOn(); 900::ms => now; eA.keyOff();
+100::ms => now;
+eA.keyOn(); 900::ms => now; eA.keyOff();
+100::ms => now;
+eA.keyOn(); 900::ms => now; eA.keyOff();
+100::ms => now;
+// eA.keyOn(); eB.keyOn(); 1::second => now; eA.keyOff(); eB.keyOff();
+// 0.1::second => now;
+// eA.keyOn(); 3::second => now; eA.keyOff();
+
+3::second => now;
+
+
+// TOOD add another string that's expanding the harmony, but mimicing the first attack

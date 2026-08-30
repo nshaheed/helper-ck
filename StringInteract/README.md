@@ -11,6 +11,11 @@ make mac
 chuck lattice_interactive3 # this runs the chuck program
 ```
 
+Next you'll want to use `chump` to install a couple packages (these are optional if you want to
+take them out of the code):
+
+`chump install PlinkyRev Rec`
+
 # Controls
 `lattice_interactive3.ck` is a randomized sequencer where you can
 control what rhythms can be chosen and what strings can be excited:
