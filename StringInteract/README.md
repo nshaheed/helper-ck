@@ -1,5 +1,5 @@
 # Building & Running
-This repo has a sequencer I've made that controls two grids of strings that are close enough to 
+This repo has a sequencer I've made that controls two grids of strings that are close enough to
 bang into each other.
 
 `git clone` this repo and then `cd` into `StringInteract` (this dir). Then you need to build the chugin `Interference` that handles the nonlinearities:
