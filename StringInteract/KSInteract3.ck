@@ -12,73 +12,6 @@
 // could be done with DelayB, but it would also be nice to be able to
 // just concat two arrays in C++ land rather than through the VM.
 
-
-// this will only handle the tick, not managing
-// any of the indexing along the delay lines.
-// this is so when it gets moved to a chugin
-// it's the smallest footprint i can get
-//
-// TODO replace this with a chugin
-// public class Interference extends Chugen {
-//   UGen @ _mod;
-//   // UGen @ _carr; // not sure about this? maybe just use inlet
-
-//   0.75 => float _offset;
-
-//   // fun @construct(UGen carr, UGen mod) {
-//   //   carr @=> _carr;
-//   //   mod @=> _mod;
-//   // }
-
-//   fun @construct(UGen mod) {
-//     mod @=> _mod;
-//   }
-
-//   fun @construct(float offset) {
-//     offset => _offset;
-//   }
-
-//   fun @construct(UGen mod, float offset) {
-//     mod @=> _mod;
-//     offset => _offset;
-//   }
-
-//   fun UGen mod() {
-//     return _mod;
-//   }
-
-//   fun UGen mod(UGen md) {
-//     md @=> _mod;
-//     return _mod;
-//   }
-
-//   fun float offset() {
-//     return _offset;
-//   }
-
-//   fun float offset(float o) {
-//     o => _offset;
-//     return _offset;
-//   }
-
-//   fun float tick(float in) {
-//     if (!_mod) return in;
-
-//     in => float carr_pos;
-    
-//     _mod.last() + _offset => float mod_pos_offset;
-
-//     if (_offset >= 0. && mod_pos_offset < in) {
-//       mod_pos_offset => carr_pos;
-//     }
-//     if (_offset < 0. && mod_pos_offset > in) {
-//       mod_pos_offset => carr_pos;
-//     }
-
-//     return carr_pos;
-//   }
-// }
-
 // TODO replace time finding linked list with a tree?
 public class String extends Chugraph {
   // main line
@@ -88,7 +21,7 @@ public class String extends Chugraph {
   0.999 => block.blockZero;
 
   // lowpass into hold;
-  
+
   Gain collect => hold; // collect the delay line results
 
   // our radius
@@ -130,12 +63,27 @@ public class String extends Chugraph {
     return cumulative;
   }
 
+  @doc "get fundamental frequency of string (in Hz)"
+  fun float fundamental() {
+    return second / delay();
+  }
+
+  fun Interference getInter(int idx) {
+    _delays @=> LinkedList node;
+
+    for (int i; i < idx; i++) {
+      node.next() @=> node;
+    }
+
+    return node.inter();
+  }
+
   // Get the delay line that is outputting at a specific time. Split the
   // delay line up otherwise
   fun LinkedList getAt(dur idx) {
     if (idx < 0::samp || idx > L::samp) {
       cherr <= "[String] trying to add modulator outside of delay line size" <= IO.nl();
-      <<< "idx", idx, "L", L >>>;
+      // <<< "idx", idx, "L", L >>>;
       return null;
     }
 
@@ -177,7 +125,7 @@ public class String extends Chugraph {
 
     if (idx < 0::samp || idx > L::samp) {
       cherr <= "[String] trying to add modulator outside of delay line size" <= IO.nl();
-      <<< "idx", idx, "L", L >>>;
+      // <<< "idx", idx, "L", L >>>;
       return 0;
     }
 
@@ -246,12 +194,12 @@ public class String extends Chugraph {
   // right now this will completely clear the delay lines
   fun UGen mod(UGen mod, dur idx) {
     getAt(idx) @=> LinkedList ll;
-    <<< "deldur", ll.delayDur() >>>;
+    // <<< "deldur", ll.delayDur() >>>;
     mod => ll.mod;
 
     return ll.delay();
 
-    
+
     // if (idx <= 0::samp || idx > L::samp) {
     //   cherr <= "[String] trying to add modulator outside of delay line size" <= IO.nl();
     //   return mod;
@@ -293,7 +241,7 @@ public class String extends Chugraph {
     if(!_delays) {
       cherr <= "[String.connect()] No delays lines found at all, doing nothing" <= IO.nl();
     }
-    
+
     lowpass @=> UGen prev;
     _delays @=> LinkedList del;
 
@@ -301,10 +249,10 @@ public class String extends Chugraph {
       // prev => del.delay() => del.inter();
       prev => del.delay() => del.inter().chan(0);
 
-      <<< "del mod", del.mod() >>>;
+      // <<< "del mod", del.mod() >>>;
       // eon => now;
       if (del.mod() != null) del.mod() => del.inter().chan(1);
-	
+
       del.inter() @=> prev;
       del.next() @=> del;
     }
@@ -318,19 +266,19 @@ public class String extends Chugraph {
 
     chout <= "++++++++++++++++++++++++" <= IO.nl();
     dur cumulative;
-    int count; 
+    int count;
     while (curr != null) {
       chout <= Std.ftoa(curr.delayDur() / samp, 1) <= ",\t";
       if (curr.mod() != null) chout <= curr.mod().toString();
       else chout <= "null";
       chout <= IO.nl();
-      
+
       curr.delayDur() +=> cumulative;
       curr.next() @=> curr;
 
       count++;
     }
-    chout <= "++++++++++++++++++++++++" <= IO.nl();    
+    chout <= "++++++++++++++++++++++++" <= IO.nl();
     chout <= "Cumulative delay: " <= cumulative / samp <= IO.nl() <= IO.nl();
   }
 
@@ -340,7 +288,7 @@ class Node {
   DelayB delay;
   Interference inter;
   null @=> UGen mod;
-  
+
   null @=> LinkedList parent;
 
   fun @construct(LinkedList par, UGen md, DelayB del) {
@@ -377,11 +325,11 @@ class LinkedList {
   fun @construct(UGen mod, dur delay, LinkedList prev) {
     new Node(this, mod, new DelayB(delay)) @=> _curr;
     this._curr @=> prev._next;
-  }  
+  }
 
   fun @construct(dur d) {
     new Node(this, null, new DelayB(d)) @=> _curr;
-  }    
+  }
 
   fun LinkedList next() {
     if (!_next) return null;
@@ -468,4 +416,3 @@ eA.keyOn(); eB.keyOn(); 3::second => now; eA.keyOff(); eB.keyOff();
 eA.keyOn(); 3::second => now; eA.keyOff();
 
 4::second => now;
-
