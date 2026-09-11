@@ -27,15 +27,17 @@ dur delays2[2][3];
 for (int i; i < 2; i++) {
   for (int j; j < 3; j++) {
     0.5 * 1.5 * (1+i) * (ratios2[j]) * 50::samp => delays2[i][j];
-    <<< i, j, delays2[i][j] >>>;
+    // <<< i, j, delays2[i][j] >>>;
   }
 }
 
 Lattice lattice1 --> GG.scene();
 // Lattice lattice1;
 lattice1.output => master;
+
+// initialize strings and rhythms
 "00" => lattice1.toggleOnstrings;
-"10" => lattice1.toggleOnstrings;
+// "10" => lattice1.toggleOnstrings;
 
 
 Lattice lattice2(3, delays2, [["I","O","P"],["L","K","J"]]) --> GG.scene();
@@ -44,6 +46,10 @@ Lattice lattice2(3, delays2, [["I","O","P"],["L","K","J"]]) --> GG.scene();
 lattice2.output => master;
 1.01 => lattice2.offset;
 lattice2.flipLetters();
+
+// set gain
+0.65 => lattice1.attack.atk_gain;
+0.65 => lattice2.attack.atk_gain;
 
 new Attack2 @=> lattice2.attack;
 
@@ -104,13 +110,13 @@ fun highlight(RhythmBoxes r, int i, dur amnt) {
 
 // window title
 GWindow.title( "lattice" );
+GWindow.mouseMode(GWindow.MOUSE_HIDDEN);
 // uncomment to fullscreen
 // GWindow.fullscreen();
 // position camera
 
-
-
-lattice2.posX(8);
+// pos lattice 2
+lattice2.posX(80);
 
 
 class RhythmBoxes extends GGen {
@@ -172,6 +178,11 @@ Color.BLUE => rboxes2.highlightColor;
 
 2 => float WAVEFORM_Y;
 
+// initalize rhythmis
+toggleRhythm(1);
+toggleRhythm(2);
+toggleRhythm(3);
+toggleRhythm(4);
 
 spork~ run();
 spork~ run2();
@@ -187,11 +198,14 @@ while( true )
   // <<< "positions", wvfrms[0][0].positions[-1] >>>;
 
       // camera movement
-  if (GWindow.key(GWindow.KEY_LEFT)) GG.camera().rotateY(GG.dt());
-  if (GWindow.key(GWindow.KEY_RIGHT)) GG.camera().rotateY(-GG.dt());
+  // if (GWindow.key(GWindow.KEY_LEFT)) GG.camera().rotateY(GG.dt());
+  // if (GWindow.key(GWindow.KEY_RIGHT)) GG.camera().rotateY(-GG.dt());
 
-  if (GWindow.key(GWindow.KEY_UP)) GG.camera().rotateX(GG.dt());
-  if (GWindow.key(GWindow.KEY_DOWN)) GG.camera().rotateX(-GG.dt());
+  // if (GWindow.key(GWindow.KEY_UP)) GG.camera().rotateX(GG.dt());
+  // if (GWindow.key(GWindow.KEY_DOWN)) GG.camera().rotateX(-GG.dt());
+
+  if (GWindow.keyUp(GWindow.KEY_UP)) incAtkGain();
+  if (GWindow.keyUp(GWindow.KEY_DOWN)) decAtkGain();
 
   if (GWindow.keyUp(GWindow.KEY_1)) toggleRhythm(1);
   if (GWindow.keyUp(GWindow.KEY_2)) toggleRhythm(2);
@@ -203,19 +217,35 @@ while( true )
   // if (GWindow.keyUp(GWindow.KEY_3)) toggleRhythm(3);
   // if (GWindow.keyUp(GWindow.KEY_4)) toggleRhythm(4);
 
-  if (GWindow.keyUp(GWindow.KEY_Q)) lattice1.toggleOnstrings("00");
-  if (GWindow.keyUp(GWindow.KEY_W)) lattice1.toggleOnstrings("01");
-  if (GWindow.keyUp(GWindow.KEY_E)) lattice1.toggleOnstrings("02");
-  if (GWindow.keyUp(GWindow.KEY_D)) lattice1.toggleOnstrings("10");
-  if (GWindow.keyUp(GWindow.KEY_S)) lattice1.toggleOnstrings("11");
-  if (GWindow.keyUp(GWindow.KEY_A)) lattice1.toggleOnstrings("12");
+  if (GWindow.key(GWindow.KEY_LEFTSHIFT) || GWindow.key(GWindow.KEY_RIGHTSHIFT)) {
+    if (GWindow.keyUp(GWindow.KEY_Q)) "00" => lattice1.queued;
+    if (GWindow.keyUp(GWindow.KEY_W)) "01" => lattice1.queued;
+    if (GWindow.keyUp(GWindow.KEY_E)) "02" => lattice1.queued;
+    if (GWindow.keyUp(GWindow.KEY_D)) "10" => lattice1.queued;
+    if (GWindow.keyUp(GWindow.KEY_S)) "11" => lattice1.queued;
+    if (GWindow.keyUp(GWindow.KEY_A)) "12" => lattice1.queued;
 
-  if (GWindow.keyUp(GWindow.KEY_I)) lattice2.toggleOnstrings("00");
-  if (GWindow.keyUp(GWindow.KEY_O)) lattice2.toggleOnstrings("01");
-  if (GWindow.keyUp(GWindow.KEY_P)) lattice2.toggleOnstrings("02");
-  if (GWindow.keyUp(GWindow.KEY_L)) lattice2.toggleOnstrings("10");
-  if (GWindow.keyUp(GWindow.KEY_K)) lattice2.toggleOnstrings("11");
-  if (GWindow.keyUp(GWindow.KEY_J)) lattice2.toggleOnstrings("12");
+    if (GWindow.keyUp(GWindow.KEY_I)) "00" => lattice2.queued;
+    if (GWindow.keyUp(GWindow.KEY_O)) "01" => lattice2.queued;
+    if (GWindow.keyUp(GWindow.KEY_P)) "02" => lattice2.queued;
+    if (GWindow.keyUp(GWindow.KEY_L)) "10" => lattice2.queued;
+    if (GWindow.keyUp(GWindow.KEY_K)) "11" => lattice2.queued;
+    if (GWindow.keyUp(GWindow.KEY_J)) "12" => lattice2.queued;
+  } else {
+    if (GWindow.keyUp(GWindow.KEY_Q)) lattice1.toggleOnstrings("00");
+    if (GWindow.keyUp(GWindow.KEY_W)) lattice1.toggleOnstrings("01");
+    if (GWindow.keyUp(GWindow.KEY_E)) lattice1.toggleOnstrings("02");
+    if (GWindow.keyUp(GWindow.KEY_D)) lattice1.toggleOnstrings("10");
+    if (GWindow.keyUp(GWindow.KEY_S)) lattice1.toggleOnstrings("11");
+    if (GWindow.keyUp(GWindow.KEY_A)) lattice1.toggleOnstrings("12");
+
+    if (GWindow.keyUp(GWindow.KEY_I)) lattice2.toggleOnstrings("00");
+    if (GWindow.keyUp(GWindow.KEY_O)) lattice2.toggleOnstrings("01");
+    if (GWindow.keyUp(GWindow.KEY_P)) lattice2.toggleOnstrings("02");
+    if (GWindow.keyUp(GWindow.KEY_L)) lattice2.toggleOnstrings("10");
+    if (GWindow.keyUp(GWindow.KEY_K)) lattice2.toggleOnstrings("11");
+    if (GWindow.keyUp(GWindow.KEY_J)) lattice2.toggleOnstrings("12");
+  }
 
   lattice1.updateLetters();
   lattice2.updateLetters();
@@ -310,12 +340,14 @@ fun void updateCamera() {
       GG.scene().camera().posZ(14.0);
       GG.scene().camera().posX(4.0);
       @(4.1, 3, 0) => rboxes.pos;
+      lattice2.posX(8);
       true => zoomedOut;
     } else if (zoomedOut && lattice1playing && !lattice2playing) {
       // zoom in
       GG.scene().camera().posZ(8.0);
       GG.scene().camera().posX(0.0);
       @(-3.7, 3, 0) => rboxes.pos;
+      lattice2.posX(80);
       false => zoomedOut;
     }
     0.25::second => now;
@@ -341,7 +373,17 @@ fun void updateCamera() {
 //   }
 // }
 
+fun incAtkGain() {
+  0.05 +=> lattice1.attack.atk_gain;
+  0.05 +=> lattice2.attack.atk_gain;
+  <<< lattice1.attack.atk_gain >>>;
+}
 
+fun decAtkGain() {
+  0.05 -=> lattice1.attack.atk_gain;
+  0.05 -=> lattice2.attack.atk_gain;
+  <<< lattice1.attack.atk_gain >>>;
+}
 
 // 30::second => now;
 eon => now;

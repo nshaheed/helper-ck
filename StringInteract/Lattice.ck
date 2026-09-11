@@ -4,6 +4,8 @@
 public class Lattice extends GGen {
   3 => int size; // default size
 
+  string _queued; // what is queued
+
   String strs[][];
   Pan2 pans[][];
   UGen_Stereo output;
@@ -69,7 +71,7 @@ public class Lattice extends GGen {
 	  0.9 * p => p;
 	  // offset slightly for second row
 	  if (i == 0) 0.75 * p => p;
-	  p => pan.pan;
+	  -1. * p => pan.pan;
 	}
 
 	str => pan => output;
@@ -212,18 +214,70 @@ public class Lattice extends GGen {
       }
     }
   }
+
+  fun string queued(string s) {
+    pop();
+
+    s => _queued;
+    // highlight the letterbox being queued up
+    posX(s) => int i;
+    posY(s) => int j;
+
+    letters[i][j].queue();
+
+    return s;
+  }
+
+  fun string unqueued() {
+    if (_queued == "") return _queued;
+    // highlight the letterbox being queued up
+    posX(_queued) => int i;
+    posY(_queued) => int j;
+    "" => _queued;
+
+    spork~ letters[i][j].unqueue();
+
+    return "";
+  }
+
+  // pop off the queue element without any of the animation
+  fun string pop() {
+    if (_queued == "") return "";
+
+    posX(_queued) => int i;
+    posY(_queued) => int j;
+    "" => _queued;
+
+    letters[i][j].unqueueSilent();
+
+    return "";
+  }
+
+  fun string queued() {
+    return _queued;
+  }
 }
 
 public class TextBox extends GGen {
   // GPlane _highlight --> GPlane _plane --> GText txt --> this;
-  GPlane _plane --> GPlane _highlight --> GText txt --> this;  
+  GPlane _queue1 --> GPlane _queue2 --> GPlane _plane -->
+    GPlane _highlight --> GText txt --> this;
+
   Color.GRAY => vec3 plane_color;
   Color.YELLOW => vec3 highlight_color;
 
+  Color.BLUE => _queue1.color;
+  Color.BLACK => _queue2.color;
+
   0.9 => _plane.sca;
+  1.3 => _queue1.sca;
+  0.9 => _queue2.sca;
   highlight_color => _highlight.color;
   0.95 => _highlight.sca;
   0. => _highlight.alpha;
+
+  0. => _queue1.alpha;
+  0. => _queue2.alpha;
 
   fun @construct(string text) {
     text => txt.text;
@@ -255,14 +309,57 @@ public class TextBox extends GGen {
   fun unhighlight() {
     0. => _highlight.alpha;
   }
+
+  fun queue() {
+    1. => _queue1.alpha;
+    1. => _queue2.alpha;
+  }
+
+  // unqueue without animation
+  fun unqueueSilent() {
+    0. => _queue1.alpha;
+    0. => _queue2.alpha;
+    0.9 => _queue2.sca;
+  }
+
+  fun unqueue() {
+    0.9::second => dur env;
+
+    env + now => time later;
+
+    (env / 15::ms) $ int => int steps;
+    int counter;
+
+    while (now < later) {
+      @(0.01,0.01,0.01) + _queue2.sca() => _queue2.sca;
+
+      (counter$float) / steps => float prop;
+
+      1. - prop => _queue2.alpha;
+      1. - prop => _queue1.alpha;
+      // _queue2.alpha() - 0.1 =>
+      // _queue1.alpha() - 0.1 => _queue1.alpha;
+
+      counter++;
+      15::ms => now;
+    }
+
+    0. => _queue1.alpha;
+    0. => _queue2.alpha;
+    0.9 => _queue2.sca;
+  }
 }
 
 public class Attack {
+  1 => float atk_gain;
   fun atk(Lattice l) {
     if (l.onstrings.size() == 0) return;
 
     // I'm using 220hz
     SinOsc s => ADSR e(1::ms, 1::ms, 0.9, 1::second);
+
+    atk_gain => s.gain;
+
     // Noise s => ADSR e(0.1::ms, 0.1::ms, 0.9, 0.1::second);
 
     // 0.1 => e.gain; // this changes the sound a lot - can def use this
@@ -271,7 +368,14 @@ public class Attack {
     // Math.random2(0,size-1) => int j;
 
     Math.random2(0, l.onstrings.size()-1) => int idx;
+
     l.onstrings[idx] => string pos;
+
+    if (l.queued() != "") {
+      l.queued() => pos;
+      l.unqueued();
+    }
+
     l.posX(pos) => int i;
     l.posY(pos) => int j;
 
@@ -305,6 +409,8 @@ public class Attack2 extends Attack {
 
     // I'm using 220hz
     SinOsc s(330) => ADSR e(1::ms, 1::ms, 0.9, 1::second);
+
+    atk_gain => s.gain;
     // Noise s => ADSR e(0.1::ms, 0.1::ms, 0.9, 0.1::second);
 
     // 0.1 => e.gain; // this changes the sound a lot - can def use this
@@ -314,6 +420,12 @@ public class Attack2 extends Attack {
 
     Math.random2(0, l.onstrings.size()-1) => int idx;
     l.onstrings[idx] => string pos;
+
+    if (l.queued() != "") {
+      l.queued() => pos;
+      l.unqueued();
+    }
+
     l.posX(pos) => int i;
     l.posY(pos) => int j;
 
